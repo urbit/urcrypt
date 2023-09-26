@@ -56,13 +56,13 @@ AC_PROG_CC
 
 # Checks for pkg-config capable libraries
 PKG_CHECK_MODULES([LIBSECP256K1], [libsecp256k1])
-ac_save_CPPFLAGS=$CPPFLAGS
+save_CPPFLAGS=$CPPFLAGS
 CPPFLAGS="$CPPFLAGS $LIBSECP256K1_CFLAGS"
 AC_CHECK_HEADER([secp256k1_recovery.h], [],
                 [AC_MSG_ERROR([libsecp256k1 must have recovery enabled.])])
 AC_CHECK_HEADER([secp256k1_schnorrsig.h], [],
                 [AC_MSG_ERROR([libsecp256k1 must have Schnorr signatures enabled.])])
-CPPFLAGS=$ac_save_CPPFLAGS
+CPPFLAGS=$save_CPPFLAGS
 PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto])
 
 AS_IF([test "$enable_shared" == "yes"],
