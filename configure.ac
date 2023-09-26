@@ -67,9 +67,9 @@ PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto])
 
 AS_IF([test "$enable_shared" == "yes"],
   [# ensure crypto will be shared for shared object (see README.md)
-   save_LDFLAGS=$LDFLAGS
+   save_LIBS=$LIBS
    save_CFLAGS=$CFLAGS
-   LDFLAGS="$LIBCRYPTO_LIBS $LDFLAGS"
+   LIBS="$LIBCRYPTO_LIBS $LIBS"
    CFLAGS="$LIBCRYPTO_CFLAGS $CFLAGS"
    AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <openssl/sha.h>],
                                    [[unsigned char sha[32];
@@ -82,7 +82,7 @@ AS_IF([test "$enable_shared" == "yes"],
         [AC_MSG_RESULT([yes])],
         [AC_MSG_ERROR([cannot find shared object for libcrypto.])])],
      [AC_MSG_ERROR([unable to link libcrypto.])])
-     LDFLAGS=$save_LDFLAGS
+     LIBS=$save_LIBS
      CFLAGS=$save_CFLAGS])
 
 # Checks for non pkg-config libraries
