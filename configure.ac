@@ -23,8 +23,8 @@ m4_define([urcrypt_lt_age],      [0])
 #  1. MAJOR version when you make incompatible API changes,
 #  2. MINOR version when you add functionality in a backwards compatible manner, and
 #  3. PATCH version when you make backwards compatible bug fixes.
-m4_define([urcrypt_sv_major], [0])
-m4_define([urcrypt_sv_minor], [1])
+m4_define([urcrypt_sv_major], [1])
+m4_define([urcrypt_sv_minor], [0])
 m4_define([urcrypt_sv_patch], [0])
 
 # Initialize autoconf
