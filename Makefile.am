@@ -6,6 +6,7 @@ lib_LTLIBRARIES = liburcrypt.la
 noinst_LTLIBRARIES = libed25519.la \
 		     libge_additions.la \
 		     libargon2.la \
+		     libblake3.la \
 		     libkeccak_tiny.la \
 		     libscrypt.la
 
@@ -16,6 +17,8 @@ noinst_HEADERS = urcrypt/util.h \
 		 ge-additions/ge-additions.h \
 		 argon2/include/argon2.h \
 		 argon2/src/blake2/blake2.h \
+		 blake3/blake3.h \
+		 blake3/blake3_impl.h \
 		 scrypt/sha256.h \
 		 scrypt/libscrypt.h
 
@@ -27,6 +30,7 @@ liburcrypt_la_CPPFLAGS = -I$(srcdir)/ed25519/src \
 			 -I$(srcdir)/ge-additions \
 			 -I$(srcdir)/argon2/include \
 			 -I$(srcdir)/argon2/src/blake2 \
+			 -I$(srcdir)/blake3 \
 			 -I$(srcdir)/keccak-tiny \
 			 -I$(srcdir)/scrypt
 liburcrypt_la_LIBADD = $(LIBCRYPTO_LIBS) \
@@ -35,6 +39,7 @@ liburcrypt_la_LIBADD = $(LIBCRYPTO_LIBS) \
 		       libed25519.la \
 		       libge_additions.la \
 		       libargon2.la \
+		       libblake3.la \
 		       libkeccak_tiny.la \
 		       libscrypt.la
 liburcrypt_la_CFLAGS = $(LIBCRYPTO_CFLAGS) \
@@ -47,6 +52,7 @@ liburcrypt_la_SOURCES = urcrypt/aes_cbc.c \
 			urcrypt/aes_ecb.c \
 			urcrypt/aes_siv.c \
 			urcrypt/argon.c \
+			urcrypt/blake3.c \
 			urcrypt/ed25519.c \
 			urcrypt/ge_additions.c \
 			urcrypt/ripemd.c \
@@ -105,6 +111,9 @@ if ARCH_GENERIC
 libargon2_la_SOURCES += \
 	argon2/src/ref.c
 endif
+
+# blake3
+# TODO
 
 # scrypt
 libscrypt_la_CPPFLAGS = -D_FORTIFY_SOURCE=2
