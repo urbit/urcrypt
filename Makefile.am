@@ -113,7 +113,23 @@ libargon2_la_SOURCES += \
 endif
 
 # blake3
-# TODO
+libblake3_la_CPPFLAGS = -I$(srcdir)/blake3
+libblake3_la_SOURCES = blake3/blake3.c \
+	blake3/blake3_dispatch.c \
+	blake3/blake3_portable.c
+
+if ARCH_X86_64
+libblake3_la_SOURCES += \
+	blake3/blake3_sse2_x86-64_unix.S \
+	blake3/blake3_sse41_x86-64_unix.S \
+	blake3/blake3_avx2_x86-64_unix.S \
+	blake3/blake3_avx512_x86-64_unix.S
+endif
+if ARCH_GENERIC
+libblake3_la_CPPFLAGS += -DBLAKE3_USE_NEON=1
+libblake3_la_SOURCES += \
+	blake3/blake3_neon.c
+endif
 
 # scrypt
 libscrypt_la_CPPFLAGS = -D_FORTIFY_SOURCE=2

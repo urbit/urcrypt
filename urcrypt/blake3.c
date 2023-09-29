@@ -1,5 +1,6 @@
 #include "urcrypt.h"
 #include "util.h"
+// #include <blake3.c>
 #include <blake3.h>
 #include <blake3_impl.h>
 
@@ -24,7 +25,7 @@ urcrypt_blake3_hash(size_t message_length,
 }
 
 blake3_output_t
-urcrypt_blake3_chunk_output(size_t chunk_length;
+urcrypt_blake3_chunk_output(size_t chunk_length,
                             uint8_t *chunk,
                             uint8_t key[BLAKE3_KEY_LEN],
                             uint8_t flags)
@@ -46,7 +47,7 @@ urcrypt_blake3_parent_output(blake3_output_t l,
 {
   urcrypt__reverse(BLAKE3_KEY_LEN, key);
 
-  uint8_t block[BLAKE3_BLOCK_LEN]
+  uint8_t block[BLAKE3_BLOCK_LEN];
   blake3_compress_in_place(l.cv, l.block, l.block_len, l.counter, l.flags);
   blake3_compress_in_place(r.cv, r.block, r.block_len, r.counter, r.flags);
   store_cv_words(block, l.cv);
