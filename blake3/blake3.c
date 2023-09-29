@@ -51,14 +51,6 @@ INLINE uint8_t chunk_state_maybe_start_flag(const blake3_chunk_state *self) {
   }
 }
 
-typedef struct {
-  uint32_t input_cv[8];
-  uint64_t counter;
-  uint8_t block[BLAKE3_BLOCK_LEN];
-  uint8_t block_len;
-  uint8_t flags;
-} output_t;
-
 INLINE output_t make_output(const uint32_t input_cv[8],
                             const uint8_t block[BLAKE3_BLOCK_LEN],
                             uint8_t block_len, uint64_t counter,
@@ -613,4 +605,28 @@ void blake3_hasher_finalize_seek(const blake3_hasher *self, uint64_t seek,
 void blake3_hasher_reset(blake3_hasher *self) {
   chunk_state_reset(&self->chunk, self->key, 0);
   self->cv_stack_len = 0;
+}
+
+void blake3i_chunk_state_init(blake3_chunk_state *self, const uint32_t key[8],
+                             uint8_t flags) {
+  return chunk_state_init(self, key, flags);
+}
+
+void blake3i_chunk_state_update(blake3_chunk_state *self, const uint8_t *input,
+                               size_t input_len) {
+  return chunk_state_update(self, input, input_len);
+}
+
+output_t blake3i_chunk_state_output(const blake3_chunk_state *self) {
+  return chunk_state_output(self);
+}
+
+output_t blake3i_parent_output(const uint8_t block[BLAKE3_BLOCK_LEN],
+                              const uint32_t key[8], uint8_t flags) {
+  return parent_output(block, key, flags);
+}
+
+void blake3i_output_root_bytes(const output_t *self, uint64_t seek, uint8_t *out,
+                              size_t out_len) {
+  return output_root_bytes(self, seek, out, out_len);
 }

@@ -28,7 +28,7 @@ enum blake3_flags {
 #define INLINE static inline __attribute__((always_inline))
 #endif
 
-#if defined(__x86_64__) || defined(_M_X64) 
+#if defined(__x86_64__) || defined(_M_X64)
 #define IS_X86
 #define IS_X86_64
 #endif
@@ -48,7 +48,7 @@ enum blake3_flags {
 #endif
 #endif
 
-#if !defined(BLAKE3_USE_NEON) 
+#if !defined(BLAKE3_USE_NEON)
   // If BLAKE3_USE_NEON not manually set, autodetect based on AArch64ness
   #if defined(IS_AARCH64)
     #if defined(__ARM_BIG_ENDIAN)
@@ -133,7 +133,7 @@ INLINE unsigned int popcnt(uint64_t x) {
 }
 
 // Largest power of two less than or equal to x. As a special case, returns 1
-// when x is 0. 
+// when x is 0.
 INLINE uint64_t round_down_to_power_of_2(uint64_t x) {
   return 1ULL << highest_one(x | 1);
 }
@@ -199,14 +199,26 @@ void blake3_hash_many(const uint8_t *const *inputs, size_t num_inputs,
 size_t blake3_simd_degree(void);
 
 // Additional exports for urcrypt
-void chunk_state_init(blake3_chunk_state *self, const uint32_t key[8],
+typedef struct {
+  uint32_t input_cv[8];
+  uint64_t counter;
+  uint8_t block[BLAKE3_BLOCK_LEN];
+  uint8_t block_len;
+  uint8_t flags;
+} output_t;
+
+void blake3i_chunk_state_init(blake3_chunk_state *self, const uint32_t key[8],
                              uint8_t flags);
-void chunk_state_update(blake3_chunk_state *self, const uint8_t *input,
+
+void blake3i_chunk_state_update(blake3_chunk_state *self, const uint8_t *input,
                                size_t input_len);
-output_t chunk_state_output(const blake3_chunk_state *self);
-output_t parent_output(const uint8_t block[BLAKE3_BLOCK_LEN],
+
+output_t blake3i_chunk_state_output(const blake3_chunk_state *self);
+
+output_t blake3i_parent_output(const uint8_t block[BLAKE3_BLOCK_LEN],
                               const uint32_t key[8], uint8_t flags);
-void output_root_bytes(const output_t *self, uint64_t seek, uint8_t *out,
+
+void blake3i_output_root_bytes(const output_t *self, uint64_t seek, uint8_t *out,
                               size_t out_len);
 
 // Declarations for implementation-specific functions.
