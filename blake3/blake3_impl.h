@@ -207,13 +207,9 @@ typedef struct {
   uint8_t flags;
 } output_t;
 
-void blake3i_chunk_state_init(blake3_chunk_state *self, const uint32_t key[8],
-                             uint8_t flags);
-
-void blake3i_chunk_state_update(blake3_chunk_state *self, const uint8_t *input,
-                               size_t input_len);
-
-output_t blake3i_chunk_state_output(const blake3_chunk_state *self);
+void blake3i_compress_subtree_to_parent_node(const uint8_t *input, size_t input_len,
+                                     const uint32_t key[8], uint64_t counter,
+                                     uint8_t flags, uint8_t out[2 * BLAKE3_OUT_LEN]);
 
 output_t blake3i_parent_output(const uint8_t block[BLAKE3_BLOCK_LEN],
                               const uint32_t key[8], uint8_t flags);

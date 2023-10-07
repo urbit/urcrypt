@@ -630,3 +630,9 @@ void blake3i_output_root_bytes(const output_t *self, uint64_t seek, uint8_t *out
                               size_t out_len) {
   return output_root_bytes(self, seek, out, out_len);
 }
+
+void blake3i_compress_subtree_to_parent_node(const uint8_t *input, size_t input_len,
+                                     const uint32_t key[8], uint64_t counter,
+                                     uint8_t flags, uint8_t out[2 * BLAKE3_OUT_LEN]) {
+  return compress_subtree_to_parent_node(input, input_len, key, counter, flags, out);
+}
