@@ -117,6 +117,14 @@ AC_SUBST([ARCH])
 AM_CONDITIONAL([ARCH_X86_64],  [test "$ARCH" = 'x86_64'])
 AM_CONDITIONAL([ARCH_GENERIC], [test "$ARCH" = 'generic'])
 
+# Check for -march=native support and append it to libkeccak_tiny_la_CFLAGS
+AX_CHECK_COMPILE_FLAG([-march=native], [
+  AX_APPEND_COMPILE_FLAGS([-march=native], [libkeccak_tiny_la_CFLAGS])
+  AC_MSG_NOTICE([Added -march=native to libkeccak_tiny_la_CFLAGS])
+], [
+  AC_MSG_NOTICE([-march=native not supported])
+])
+
 # Finish and output
 AC_CONFIG_FILES([Makefile liburcrypt-$URCRYPT_API_VERSION.pc:liburcrypt.pc.in])
 AC_OUTPUT

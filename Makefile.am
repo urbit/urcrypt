@@ -125,7 +125,6 @@ libscrypt_la_SOURCES = scrypt/b64.c \
 
 # keccak-tiny
 libkeccak_tiny_la_CFLAGS = -std=c11 -Wextra -Wpedantic -Wall
-AX_APPEND_COMPILE_FLAGS([libkeccak_tiny_la_CFLAGS], [-march=native])
 libkeccak_tiny_la_SOURCES = keccak-tiny/keccak-tiny.c \
 		       keccak-tiny/define-macros.h \
 		       keccak-tiny/keccak-tiny.h
