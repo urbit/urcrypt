@@ -175,34 +175,26 @@ int urcrypt_blake2(size_t message_length,
                    size_t out_length,
                    uint8_t *out);
 
-typedef struct {
-  uint32_t input_cv[8];
-  uint64_t counter;
-  uint8_t block[64];
-  uint8_t block_len;
-  uint8_t flags;
-} blake3_output_t;
-
 void urcrypt_blake3_hash(size_t message_length,
                          uint8_t *message,
                          uint8_t key[32],
                          size_t out_length,
                          uint8_t *out);
 
-blake3_output_t urcrypt_blake3_subtree_output(size_t subtree_height,
-                                              uint8_t *subtree_leaves,
-                                              uint64_t counter,
-                                              uint8_t key[32],
-                                              uint8_t flags);
+void urcrypt_blake3_chunk_output(size_t chunk_length,
+                                 uint8_t *chunk,
+                                 uint8_t cv[32],
+                                 uint8_t block[64],
+                                 uint8_t *block_len,
+                                 uint64_t *counter,
+                                 uint8_t *flags);
 
-blake3_output_t urcrypt_blake3_parent_output(blake3_output_t l,
-                                             blake3_output_t r,
-                                             uint8_t key[32],
-                                             uint8_t flags);
-
-void urcrypt_blake3_xof(blake3_output_t o,
-                        size_t out_length,
-                        uint8_t *out);
+void urcrypt_blake3_compress(uint8_t cv[32],
+                             uint8_t block[64],
+                             uint8_t block_len,
+                             uint64_t counter,
+                             uint8_t flags,
+                             uint8_t out[64]);
 
 /* there is some long-term context associated with the secp library
  * (precomputed tables, etc), so secp functions require a context object

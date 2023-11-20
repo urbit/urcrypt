@@ -198,25 +198,6 @@ void blake3_hash_many(const uint8_t *const *inputs, size_t num_inputs,
 
 size_t blake3_simd_degree(void);
 
-// Additional exports for urcrypt
-typedef struct {
-  uint32_t input_cv[8];
-  uint64_t counter;
-  uint8_t block[BLAKE3_BLOCK_LEN];
-  uint8_t block_len;
-  uint8_t flags;
-} output_t;
-
-void blake3i_compress_subtree_to_parent_node(const uint8_t *input, size_t input_len,
-                                     const uint32_t key[8], uint64_t counter,
-                                     uint8_t flags, uint8_t out[2 * BLAKE3_OUT_LEN]);
-
-output_t blake3i_parent_output(const uint8_t block[BLAKE3_BLOCK_LEN],
-                              const uint32_t key[8], uint8_t flags);
-
-void blake3i_output_root_bytes(const output_t *self, uint64_t seek, uint8_t *out,
-                              size_t out_len);
-
 // Declarations for implementation-specific functions.
 void blake3_compress_in_place_portable(uint32_t cv[8],
                                        const uint8_t block[BLAKE3_BLOCK_LEN],
