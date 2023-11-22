@@ -47,6 +47,9 @@ AM_INIT_AUTOMAKE([foreign subdir-objects -Wall -Werror])
 AM_PROG_AR
 LT_INIT
 
+# Preprocess Assembly files
+AM_PROG_AS
+
 # Initialize pkgconfig
 PKG_PROG_PKG_CONFIG
 PKG_INSTALLDIR
