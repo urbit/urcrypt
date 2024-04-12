@@ -66,34 +66,22 @@ int crypto_verify32(const uint8_t a[32], const uint8_t b[32]);
 int crypto_verify64(const uint8_t a[64], const uint8_t b[64]);
 
 
-// Chacha20
-// --------
+// Chacha
+// ------
 
 // Specialised hash.
-// Used to hash X25519 shared secrets.
-void crypto_chacha20_h(uint8_t       out[32],
-                       const uint8_t key[32],
-                       const uint8_t in [16]);
+void crypto_chacha_h(uint8_t       out[32],
+                     const uint8_t key[32],
+                     const uint8_t in [16]);
 
 // Unauthenticated stream cipher.
 // Don't forget to add authentication.
-uint64_t crypto_chacha20_djb(uint8_t       *cipher_text,
-                             const uint8_t *plain_text,
-                             size_t         text_size,
-                             const uint8_t  key[32],
-                             const uint8_t  nonce[8],
-                             uint64_t       ctr);
-uint32_t crypto_chacha20_ietf(uint8_t       *cipher_text,
-                              const uint8_t *plain_text,
-                              size_t         text_size,
-                              const uint8_t  key[32],
-                              const uint8_t  nonce[12],
-                              uint32_t       ctr);
-uint64_t crypto_chacha20_x(uint8_t       *cipher_text,
+uint64_t crypto_chacha_djb(uint8_t       *cipher_text,
                            const uint8_t *plain_text,
                            size_t         text_size,
+                           size_t         rounds,
                            const uint8_t  key[32],
-                           const uint8_t  nonce[24],
+                           const uint8_t  nonce[8],
                            uint64_t       ctr);
 
 

@@ -162,24 +162,24 @@ void crypto_wipe(void *secret, size_t size)
 	ZERO(v_secret, size);
 }
 
-/////////////////
-/// Chacha 20 ///
-/////////////////
+////////////////
+///  Chacha  ///
+////////////////
 #define QUARTERROUND(a, b, c, d)	\
 	a += b;  d = rotl32(d ^ a, 16); \
 	c += d;  b = rotl32(b ^ c, 12); \
 	a += b;  d = rotl32(d ^ a,  8); \
 	c += d;  b = rotl32(b ^ c,  7)
 
-static void chacha20_rounds(u32 out[16], const u32 in[16])
+static void chacha_rounds(u32 out[16], const u32 in[16], size_t rounds)
 {
-	// The temporary variables make Chacha20 10% faster.
+	// The temporary variables make Chacha 10% faster.
 	u32 t0  = in[ 0];  u32 t1  = in[ 1];  u32 t2  = in[ 2];  u32 t3  = in[ 3];
 	u32 t4  = in[ 4];  u32 t5  = in[ 5];  u32 t6  = in[ 6];  u32 t7  = in[ 7];
 	u32 t8  = in[ 8];  u32 t9  = in[ 9];  u32 t10 = in[10];  u32 t11 = in[11];
 	u32 t12 = in[12];  u32 t13 = in[13];  u32 t14 = in[14];  u32 t15 = in[15];
 
-	FOR (i, 0, 10) { // 20 rounds, 2 rounds per loop.
+	FOR (i, 0, rounds/2) { // 2 rounds per loop.
 		QUARTERROUND(t0, t4, t8 , t12); // column 0
 		QUARTERROUND(t1, t5, t9 , t13); // column 1
 		QUARTERROUND(t2, t6, t10, t14); // column 2
@@ -195,16 +195,16 @@ static void chacha20_rounds(u32 out[16], const u32 in[16])
 	out[12] = t12;  out[13] = t13;  out[14] = t14;  out[15] = t15;
 }
 
-static const u8 *chacha20_constant = (const u8*)"expand 32-byte k"; // 16 bytes
+static const u8 *chacha_constant = (const u8*)"expand 32-byte k"; // 16 bytes
 
-void crypto_chacha20_h(u8 out[32], const u8 key[32], const u8 in [16])
+void crypto_chacha_h(u8 out[32], const u8 key[32], const u8 in [16])
 {
 	u32 block[16];
-	load32_le_buf(block     , chacha20_constant, 4);
+	load32_le_buf(block     , chacha_constant, 4);
 	load32_le_buf(block +  4, key              , 8);
 	load32_le_buf(block + 12, in               , 4);
 
-	chacha20_rounds(block, block);
+	chacha_rounds(block, block, 20);
 
 	// prevent reversal of the rounds by revealing only half of the buffer.
 	store32_le_buf(out   , block   , 4); // constant
@@ -212,14 +212,14 @@ void crypto_chacha20_h(u8 out[32], const u8 key[32], const u8 in [16])
 	WIPE_BUFFER(block);
 }
 
-u64 crypto_chacha20_djb(u8 *cipher_text, const u8 *plain_text,
-                        size_t text_size, const u8 key[32], const u8 nonce[8],
-                        u64 ctr)
+u64 crypto_chacha_djb(u8 *cipher_text, const u8 *plain_text,
+                      size_t text_size, size_t rounds, const u8 key[32],
+					  const u8 nonce[8], u64 ctr)
 {
 	u32 input[16];
-	load32_le_buf(input     , chacha20_constant, 4);
-	load32_le_buf(input +  4, key              , 8);
-	load32_le_buf(input + 14, nonce            , 2);
+	load32_le_buf(input     , chacha_constant, 4);
+	load32_le_buf(input +  4, key            , 8);
+	load32_le_buf(input + 14, nonce          , 2);
 	input[12] = (u32) ctr;
 	input[13] = (u32)(ctr >> 32);
 
@@ -227,7 +227,7 @@ u64 crypto_chacha20_djb(u8 *cipher_text, const u8 *plain_text,
 	u32    pool[16];
 	size_t nb_blocks = text_size >> 6;
 	FOR (i, 0, nb_blocks) {
-		chacha20_rounds(pool, input);
+		chacha_rounds(pool, input, rounds);
 		if (plain_text != 0) {
 			FOR (j, 0, 16) {
 				u32 p = pool[j] + input[j];
@@ -254,7 +254,7 @@ u64 crypto_chacha20_djb(u8 *cipher_text, const u8 *plain_text,
 		if (plain_text == 0) {
 			plain_text = zero;
 		}
-		chacha20_rounds(pool, input);
+		chacha_rounds(pool, input, rounds);
 		u8 tmp[64];
 		FOR (i, 0, 16) {
 			store32_le(tmp + i*4, pool[i] + input[i]);
@@ -271,26 +271,6 @@ u64 crypto_chacha20_djb(u8 *cipher_text, const u8 *plain_text,
 	return ctr;
 }
 
-u32 crypto_chacha20_ietf(u8 *cipher_text, const u8 *plain_text,
-                         size_t text_size,
-                         const u8 key[32], const u8 nonce[12], u32 ctr)
-{
-	u64 big_ctr = ctr + ((u64)load32_le(nonce) << 32);
-	return (u32)crypto_chacha20_djb(cipher_text, plain_text, text_size,
-	                                key, nonce + 4, big_ctr);
-}
-
-u64 crypto_chacha20_x(u8 *cipher_text, const u8 *plain_text,
-                      size_t text_size,
-                      const u8 key[32], const u8 nonce[24], u64 ctr)
-{
-	u8 sub_key[32];
-	crypto_chacha20_h(sub_key, key, nonce);
-	ctr = crypto_chacha20_djb(cipher_text, plain_text, text_size,
-	                          sub_key, nonce + 16, ctr);
-	WIPE_BUFFER(sub_key);
-	return ctr;
-}
 
 /////////////////
 /// Poly 1305 ///
