@@ -196,6 +196,19 @@ void urcrypt_blake3_compress(uint8_t cv[32],
                              uint8_t flags,
                              uint8_t out[64]);
 
+
+void urcrypt_chacha_crypt(size_t rounds,
+                          uint8_t key[32],
+                          uint8_t nonce[8],
+                          uint64_t counter,
+                          size_t message_length,
+                          uint8_t *message);
+
+void urcrypt_chacha_xchacha(uint8_t key[32],
+                            uint8_t nonce[24],
+                            uint8_t out_key[32],
+                            uint8_t out_nonce[8]);
+
 /* there is some long-term context associated with the secp library
  * (precomputed tables, etc), so secp functions require a context object
  */
