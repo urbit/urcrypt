@@ -204,7 +204,8 @@ void urcrypt_chacha_crypt(size_t rounds,
                           size_t message_length,
                           uint8_t *message);
 
-void urcrypt_chacha_xchacha(uint8_t key[32],
+void urcrypt_chacha_xchacha(size_t rounds,
+                            uint8_t key[32],
                             uint8_t nonce[24],
                             uint8_t out_key[32],
                             uint8_t out_nonce[8]);

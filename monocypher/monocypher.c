@@ -197,14 +197,14 @@ static void chacha_rounds(u32 out[16], const u32 in[16], size_t rounds)
 
 static const u8 *chacha_constant = (const u8*)"expand 32-byte k"; // 16 bytes
 
-void crypto_chacha_h(u8 out[32], const u8 key[32], const u8 in [16])
+void crypto_chacha_h(u8 out[32], size_t rounds, const u8 key[32], const u8 in [16])
 {
 	u32 block[16];
 	load32_le_buf(block     , chacha_constant, 4);
 	load32_le_buf(block +  4, key              , 8);
 	load32_le_buf(block + 12, in               , 4);
 
-	chacha_rounds(block, block, 20);
+	chacha_rounds(block, block, rounds);
 
 	// prevent reversal of the rounds by revealing only half of the buffer.
 	store32_le_buf(out   , block   , 4); // constant

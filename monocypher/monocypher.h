@@ -71,6 +71,7 @@ int crypto_verify64(const uint8_t a[64], const uint8_t b[64]);
 
 // Specialised hash.
 void crypto_chacha_h(uint8_t       out[32],
+                     size_t        rounds,
                      const uint8_t key[32],
                      const uint8_t in [16]);
 
