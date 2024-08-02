@@ -7,15 +7,12 @@ void
 urcrypt_blake3_hash(size_t message_length,
                     uint8_t *message,
                     uint8_t key[BLAKE3_KEY_LEN],
+                    uint8_t flags,
                     size_t out_length,
                     uint8_t *out)
 {
   blake3_hasher hasher;
-  if (memcmp(key, IV, 32) == 0) {
-    blake3_hasher_init(&hasher);
-  } else {
-    blake3_hasher_init_keyed(&hasher, key);
-  }
+  blake3_hasher_init_raw(&hasher, key, flags);
   blake3_hasher_update(&hasher, message, message_length);
   blake3_hasher_finalize(&hasher, out, out_length);
 }

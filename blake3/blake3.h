@@ -61,6 +61,8 @@ typedef struct {
 } blake3_hasher;
 
 BLAKE3_API const char *blake3_version(void);
+BLAKE3_API void blake3_hasher_init_raw(blake3_hasher *self, const uint8_t key[BLAKE3_KEY_LEN],
+                                       uint8_t flags);
 BLAKE3_API void blake3_hasher_init(blake3_hasher *self);
 BLAKE3_API void blake3_hasher_init_keyed(blake3_hasher *self,
                                          const uint8_t key[BLAKE3_KEY_LEN]);

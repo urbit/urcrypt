@@ -391,6 +391,12 @@ void blake3_hasher_init_derive_key(blake3_hasher *self, const char *context) {
   blake3_hasher_init_derive_key_raw(self, context, strlen(context));
 }
 
+void blake3_hasher_init_raw(blake3_hasher *self, const uint8_t key[BLAKE3_KEY_LEN], uint8_t flags) {
+  uint32_t key_words[8];
+  load_key_words(key, key_words);
+  hasher_init_base(self, key_words, flags);
+}
+
 // As described in hasher_push_cv() below, we do "lazy merging", delaying
 // merges until right before the next CV is about to be added. This is
 // different from the reference implementation. Another difference is that we
