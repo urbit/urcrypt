@@ -178,6 +178,7 @@ int urcrypt_blake2(size_t message_length,
 void urcrypt_blake3_hash(size_t message_length,
                          uint8_t *message,
                          uint8_t key[32],
+                         uint8_t flags,
                          size_t out_length,
                          uint8_t *out);
 
