@@ -7,6 +7,7 @@ noinst_LTLIBRARIES = libed25519.la \
 		     libge_additions.la \
 		     libargon2.la \
 		     libblake3.la \
+		     libmonocypher.la \
 		     libkeccak_tiny.la \
 		     libscrypt.la
 
@@ -19,6 +20,7 @@ noinst_HEADERS = urcrypt/util.h \
 		 argon2/src/blake2/blake2.h \
 		 blake3/blake3.h \
 		 blake3/blake3_impl.h \
+		 monocypher/monocypher.h \
 		 scrypt/sha256.h \
 		 scrypt/libscrypt.h
 
@@ -31,6 +33,7 @@ liburcrypt_la_CPPFLAGS = -I$(srcdir)/ed25519/src \
 			 -I$(srcdir)/argon2/include \
 			 -I$(srcdir)/argon2/src/blake2 \
 			 -I$(srcdir)/blake3 \
+			 -I$(srcdir)/monocypher \
 			 -I$(srcdir)/keccak-tiny \
 			 -I$(srcdir)/scrypt
 liburcrypt_la_LIBADD = $(LIBCRYPTO_LIBS) \
@@ -40,6 +43,7 @@ liburcrypt_la_LIBADD = $(LIBCRYPTO_LIBS) \
 		       libge_additions.la \
 		       libargon2.la \
 		       libblake3.la \
+		       libmonocypher.la \
 		       libkeccak_tiny.la \
 		       libscrypt.la
 liburcrypt_la_CFLAGS = $(LIBCRYPTO_CFLAGS) \
@@ -53,6 +57,7 @@ liburcrypt_la_SOURCES = urcrypt/aes_cbc.c \
 			urcrypt/aes_siv.c \
 			urcrypt/argon.c \
 			urcrypt/blake3.c \
+			urcrypt/chacha.c \
 			urcrypt/ed25519.c \
 			urcrypt/ge_additions.c \
 			urcrypt/ripemd.c \
@@ -130,6 +135,10 @@ libblake3_la_CPPFLAGS += -DBLAKE3_USE_NEON=1
 libblake3_la_SOURCES += \
 	blake3/blake3_neon.c
 endif
+
+# monocypher
+libmonocypher_la_CPPFLAGS = -I$(srcdir)/monocypher
+libmonocypher_la_SOURCES = monocypher/monocypher.c
 
 # scrypt
 libscrypt_la_CPPFLAGS = -D_FORTIFY_SOURCE=2
