@@ -11,6 +11,14 @@ urcrypt_ed_puck(const uint8_t seed[32],
 }
 
 void
+urcrypt_ed_luck(const uint8_t seed[32],
+                uint8_t public_out[32],
+                uint8_t private_out[64])
+{
+  ed25519_create_keypair(public_out, private_out, seed);
+}
+
+void
 urcrypt_ed_shar(const uint8_t public[32],
                 const uint8_t seed[32],
                 uint8_t out[32])
@@ -39,6 +47,16 @@ urcrypt_ed_sign(const uint8_t *message,
 
   ed25519_create_keypair(public, secret, seed);
   ed25519_sign(out, message, length, public, secret);
+}
+
+void
+urcrypt_ed_sign_raw(const uint8_t *message,
+                size_t length,
+                const uint8_t public[32],
+                const uint8_t private[32],
+                uint8_t out[64]) {
+  memset(out, 0, 64);
+  ed25519_sign(out, message, length, public, private);
 }
 
 bool

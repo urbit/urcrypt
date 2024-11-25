@@ -28,7 +28,10 @@ int urcrypt_ed_add_double_scalarmult(const uint8_t a[32],
                                      uint8_t out[32]);
 
 void urcrypt_ed_puck(const uint8_t seed[32],
-                     uint8_t out[32]);
+                uint8_t out[32]);
+void urcrypt_ed_luck(const uint8_t seed[32],
+                uint8_t public_out[32],
+                uint8_t private_out[64]);
 void urcrypt_ed_shar(const uint8_t public[32],
                      const uint8_t seed[32],
                      uint8_t out[32]);
@@ -36,6 +39,12 @@ void urcrypt_ed_sign(const uint8_t *message,
                      size_t length,
                      const uint8_t seed[32],
                      uint8_t out[64]);
+void urcrypt_ed_sign_raw(const uint8_t *message,
+                size_t length,
+                const uint8_t public[32],
+                const uint8_t private[32],
+                uint8_t out[64]);
+
 // return value means the signature was (not) verified
 bool urcrypt_ed_veri(const uint8_t *message,
                      size_t length,
