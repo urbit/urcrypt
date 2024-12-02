@@ -27,6 +27,17 @@ int urcrypt_ed_add_double_scalarmult(const uint8_t a[32],
                                      const uint8_t b_point[32],
                                      uint8_t out[32]);
 
+// n.b. these add_scalar functions rewrite public/private
+// byte arrays. our jets copy out into a byte array,
+// so this is fine and saves us a memcpy
+void urcrypt_ed_add_scalar_private(uint8_t private[64],
+                                   const uint8_t scalar[32]);
+void urcrypt_ed_add_scalar_public(uint8_t public[32],
+                                  const uint8_t scalar[32]);
+void urcrypt_ed_add_scalar_public_private(uint8_t public[32],
+                                          uint8_t private[64],
+                                          const uint8_t scalar[32]);
+
 void urcrypt_ed_puck(const uint8_t seed[32],
                 uint8_t out[32]);
 void urcrypt_ed_luck(const uint8_t seed[32],

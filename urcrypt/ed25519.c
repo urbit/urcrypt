@@ -3,6 +3,28 @@
 #include <ed25519.h>
 
 void
+urcrypt_ed_add_scalar_private(uint8_t private[64],
+                              const uint8_t scalar[32])
+{
+  ed25519_add_scalar((unsigned char *) 0, private, scalar);
+}
+
+void
+urcrypt_ed_add_scalar_public(uint8_t public[32],
+                             const uint8_t scalar[32])
+{
+  ed25519_add_scalar(public, (unsigned char *) 0, scalar);
+}
+
+void
+urcrypt_ed_add_scalar_public_private(uint8_t public[32],
+                                     uint8_t private[64],
+                                     const uint8_t scalar[32])
+{
+  ed25519_add_scalar(public, private, scalar);
+}
+
+void
 urcrypt_ed_puck(const uint8_t seed[32],
                 uint8_t out[32])
 {
