@@ -8,6 +8,7 @@
 // array sizes[64] are purely documentary
 
 // 0 on success, result in out
+int urcrypt_ed_point_neg(uint8_t a_point[32]);
 int urcrypt_ed_point_add(const uint8_t a[32],
                          const uint8_t b[32],
                          uint8_t out[32]);
@@ -15,7 +16,7 @@ int urcrypt_ed_scalarmult(const uint8_t a[32],
                           const uint8_t b[32],
                           uint8_t out[32]);
 // void functions have no failure mode
-void urcrypt_ed_scalarmult_base(const uint8_t a[32],
+int urcrypt_ed_scalarmult_base(const uint8_t a[32],
                                 uint8_t out[32]);
 int urcrypt_ed_add_scalarmult_scalarmult_base(const uint8_t a[32],
                                               const uint8_t a_point[32],
