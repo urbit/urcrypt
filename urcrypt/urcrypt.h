@@ -15,6 +15,9 @@ int urcrypt_ed_point_add(const uint8_t a[32],
 int urcrypt_ed_scalarmult(const uint8_t a[32],
                           const uint8_t b[32],
                           uint8_t out[32]);
+void urcrypt_ed_scalar_muladd(uint8_t a[32], uint8_t b[32], uint8_t c[32], uint8_t out[32]);
+void urcrypt_ed_scalar_reduce(uint8_t a[64]);
+
 // void functions have no failure mode
 int urcrypt_ed_scalarmult_base(const uint8_t a[32],
                                 uint8_t out[32]);

@@ -1,6 +1,17 @@
 #include "urcrypt.h"
 #include <string.h>
 #include <ed25519.h>
+#include <sc.h>
+
+void
+urcrypt_ed_scalar_muladd(uint8_t a[32], uint8_t b[32], uint8_t c[32], uint8_t out[32]) {
+  sc_muladd(out, a, b, c);
+}
+
+void
+urcrypt_ed_scalar_reduce(uint8_t a[64]) {
+  sc_reduce(a);
+}
 
 void
 urcrypt_ed_add_scalar_private(uint8_t private[64],

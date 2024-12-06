@@ -45,7 +45,7 @@ urcrypt_ed_scalarmult(const uint8_t a[32],
   ge_p3 B, result;
 
   if ( ge_frombytes_negate_vartime(&B, b) != 0 ) {
-    return -1;
+    return -2;
   }
 
   // Undo the negation from above. See add_scalar.c in the ed25519 distro.
