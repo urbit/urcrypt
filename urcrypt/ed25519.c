@@ -58,12 +58,16 @@ urcrypt_ed_shar(const uint8_t public[32],
 {
   uint8_t self[32], exp[64];
 
-  memset(self, 0, 32);
-  memset(exp, 0, 64);
-  memset(out, 0, 32);
-
   ed25519_create_keypair(self, exp, seed);
   ed25519_key_exchange(out, public, exp);
+}
+
+void
+urcrypt_ed_slar(const uint8_t public[32],
+                const uint8_t private[64],
+                uint8_t out[32])
+{
+  ed25519_key_exchange(out, public, private);
 }
 
 void

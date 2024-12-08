@@ -50,6 +50,9 @@ void urcrypt_ed_luck(const uint8_t seed[32],
 void urcrypt_ed_shar(const uint8_t public[32],
                      const uint8_t seed[32],
                      uint8_t out[32]);
+void urcrypt_ed_slar(const uint8_t public[32],
+                     const uint8_t private[64],
+                     uint8_t out[32]);
 void urcrypt_ed_sign(const uint8_t *message,
                      size_t length,
                      const uint8_t seed[32],
