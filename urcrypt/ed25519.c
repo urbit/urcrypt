@@ -78,10 +78,6 @@ urcrypt_ed_sign(const uint8_t *message,
 {
   uint8_t public[64], secret[64];
 
-  memset(public, 0, 64);
-  memset(secret, 0, 64);
-  memset(out, 0, 64);
-
   ed25519_create_keypair(public, secret, seed);
   ed25519_sign(out, message, length, public, secret);
 }
@@ -92,7 +88,6 @@ urcrypt_ed_sign_raw(const uint8_t *message,
                 const uint8_t public[32],
                 const uint8_t private[32],
                 uint8_t out[64]) {
-  memset(out, 0, 64);
   ed25519_sign(out, message, length, public, private);
 }
 
