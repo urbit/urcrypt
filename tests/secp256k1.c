@@ -1,0 +1,61 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <assert.h>
+#include "urcrypt.h"
+
+static uint8_t context_ent[32] = {
+  0x95, 0x99, 0x6b, 0x8c, 0x81, 0x59, 0xd3, 0xc6,
+  0x4e, 0x6c, 0x20, 0x5a, 0x21, 0xd3, 0x3d, 0xe4,
+  0x28, 0x38, 0x0c, 0x38, 0xc1, 0x70, 0xa4, 0x79,
+  0x67, 0xf7, 0x0d, 0xb2, 0x6e, 0x1b, 0xf9, 0x15, 
+};
+
+static uint8_t scalar_0[32] = {
+  0x2c, 0x26, 0xb4, 0x6b, 0x68, 0xff, 0xc6, 0x8f,
+  0xf9, 0x9b, 0x45, 0x3c, 0x1d, 0x30, 0x41, 0x34,
+  0x13, 0x42, 0x2d, 0x70, 0x64, 0x83, 0xbf, 0xa0,
+  0xf9, 0x8a, 0x5e, 0x88, 0x62, 0x66, 0xe7, 0xae, 
+};
+
+static urcrypt_secp_context* sec_u;
+
+/* call at process start */
+void
+_cs_secp_init()
+{
+  sec_u = malloc(urcrypt_secp_prealloc_size());
+
+  if ( 0 != urcrypt_secp_init(sec_u, context_ent) ) {
+    abort();
+  }
+}
+
+/* call at process end */
+void
+_cs_secp_stop()
+{
+  urcrypt_secp_destroy(sec_u);
+  free(sec_u);
+  sec_u = NULL;
+}
+
+int main(int argc, char** argv) {
+  _cs_secp_init();
+
+  uint8_t point[65];
+  urcrypt_secp_point_from_scalar(sec_u, scalar_0, point);
+
+  printf("x: ");
+  for (unsigned int i = 0; i < 32; i++) {
+    printf("%02x", point[i + 1]);
+  }
+
+  printf("\ny: ");
+  for (unsigned int i = 0; i < 32; i++) {
+    printf("%02x", point[i + 33]);
+  }
+  printf("\n");
+
+  _cs_secp_stop();
+}

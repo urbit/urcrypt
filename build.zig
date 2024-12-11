@@ -68,20 +68,20 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(lib);
 
-    //add_test(
-    //    b,
-    //    target,
-    //    optimize,
-    //    "example-test",
-    //    "tests/example-test.c",
-    //    &.{lib},
-    //    &.{
-    //        "-O2",
-    //        "-fno-sanitize=all",
-    //        "-g",
-    //        "-Wall",
-    //    },
-    //);
+    add_test(
+        b,
+        target,
+        optimize,
+        "secp256k1-test",
+        "tests/secp256k1.c",
+        &.{lib},
+        &.{
+            "-O2",
+            "-fno-sanitize=all",
+            "-g",
+            "-Wall",
+        },
+    );
 }
 
 fn libaes_siv(
