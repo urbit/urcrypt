@@ -284,6 +284,10 @@ void urcrypt_scrypt_pbkdf_sha256(const uint8_t *passwd,
                                  size_t outlen, // must be at most 32*(2^32-1)
                                  uint8_t *out);
 
+int urcrypt_secp_point_from_scalar(urcrypt_secp_context* context,
+                                const uint8_t scalar[32],
+                                uint8_t point[65]);
+
 int urcrypt_scrypt(const uint8_t *passwd,
                    size_t passwdlen,
                    const uint8_t *salt,

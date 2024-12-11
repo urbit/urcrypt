@@ -243,3 +243,32 @@ urcrypt_secp_schnorr_veri(urcrypt_secp_context* context,
   }
   return true;
 }
+
+int
+urcrypt_secp_point_from_scalar(urcrypt_secp_context* context,
+                                const uint8_t scalar[32],
+                                uint8_t point[65]) {
+  urcrypt__reverse(32, scalar);
+  secp256k1_keypair keypair;
+  secp256k1_pubkey pubkey;
+
+  secp256k1_keypair_create(context->secp, &keypair, scalar);
+
+  secp256k1_keypair_pub(context->secp, &pubkey, &keypair);
+
+  size_t output_len = 65;
+  if (1 != secp256k1_ec_pubkey_serialize(
+          context->secp,
+          point,
+          &output_len,
+          &pubkey,
+          SECP256K1_FLAGS_TYPE_COMPRESSION)) {
+    return -1;
+  }
+
+  urcrypt__reverse(32, point + 1);
+  urcrypt__reverse(32, point + 33);
+
+  return 0;
+}
+
