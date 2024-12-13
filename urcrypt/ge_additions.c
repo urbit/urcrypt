@@ -39,10 +39,13 @@ urcrypt_ed_scalarmult(const uint8_t a[32],
                       const uint8_t b[32],
                       uint8_t out[32])
 {
+  if (a[31] & 0x80) {
+    return -1;
+  }
   ge_p3 B, result;
 
   if ( ge_frombytes_negate_vartime(&B, b) != 0 ) {
-    return -1;
+    return -2;
   }
 
   // Undo the negation from above. See add_scalar.c in the ed25519 distro.
@@ -54,13 +57,17 @@ urcrypt_ed_scalarmult(const uint8_t a[32],
   return 0;
 }
 
-void
+int
 urcrypt_ed_scalarmult_base(const uint8_t a[32],
                            uint8_t out[32])
 {
+  if (a[31] & 0x80) {
+    return -1;
+  }
   ge_p3 R;
   ge_scalarmult_base(&R, a);
   ge_p3_tobytes(out, &R);
+  return 0;
 }
 
 int
@@ -82,6 +89,19 @@ urcrypt_ed_add_scalarmult_scalarmult_base(const uint8_t a[32],
 
   ge_double_scalarmult_vartime(&r, a, &A, b);
   ge_tobytes(out, &r);
+
+  return 0;
+}
+
+int
+urcrypt_ed_point_neg(uint8_t a_point[32]) {
+  ge_p3 A;
+  
+  if (ge_frombytes_negate_vartime(&A, a_point) != 0) {
+    return -1;
+  }
+
+  ge_p3_tobytes(a_point, &A);
 
   return 0;
 }

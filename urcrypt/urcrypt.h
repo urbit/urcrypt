@@ -8,14 +8,18 @@
 // array sizes[64] are purely documentary
 
 // 0 on success, result in out
+int urcrypt_ed_point_neg(uint8_t a_point[32]);
 int urcrypt_ed_point_add(const uint8_t a[32],
                          const uint8_t b[32],
                          uint8_t out[32]);
 int urcrypt_ed_scalarmult(const uint8_t a[32],
                           const uint8_t b[32],
                           uint8_t out[32]);
+void urcrypt_ed_scalar_muladd(uint8_t a[32], uint8_t b[32], uint8_t c[32], uint8_t out[32]);
+void urcrypt_ed_scalar_reduce(uint8_t a[64]);
+
 // void functions have no failure mode
-void urcrypt_ed_scalarmult_base(const uint8_t a[32],
+int urcrypt_ed_scalarmult_base(const uint8_t a[32],
                                 uint8_t out[32]);
 int urcrypt_ed_add_scalarmult_scalarmult_base(const uint8_t a[32],
                                               const uint8_t a_point[32],
@@ -27,15 +31,38 @@ int urcrypt_ed_add_double_scalarmult(const uint8_t a[32],
                                      const uint8_t b_point[32],
                                      uint8_t out[32]);
 
+// n.b. these add_scalar functions rewrite public/private
+// byte arrays. our jets copy out into a byte array,
+// so this is fine and saves us a memcpy
+void urcrypt_ed_add_scalar_private(uint8_t private[64],
+                                   const uint8_t scalar[32]);
+void urcrypt_ed_add_scalar_public(uint8_t public[32],
+                                  const uint8_t scalar[32]);
+void urcrypt_ed_add_scalar_public_private(uint8_t public[32],
+                                          uint8_t private[64],
+                                          const uint8_t scalar[32]);
+
 void urcrypt_ed_puck(const uint8_t seed[32],
                      uint8_t out[32]);
+void urcrypt_ed_luck(const uint8_t seed[32],
+                     uint8_t public_out[32],
+                     uint8_t private_out[64]);
 void urcrypt_ed_shar(const uint8_t public[32],
                      const uint8_t seed[32],
+                     uint8_t out[32]);
+void urcrypt_ed_slar(const uint8_t public[32],
+                     const uint8_t private[64],
                      uint8_t out[32]);
 void urcrypt_ed_sign(const uint8_t *message,
                      size_t length,
                      const uint8_t seed[32],
                      uint8_t out[64]);
+void urcrypt_ed_sign_raw(const uint8_t *message,
+                         size_t length,
+                         const uint8_t public[32],
+                         const uint8_t private[32],
+                         uint8_t out[64]);
+
 // return value means the signature was (not) verified
 bool urcrypt_ed_veri(const uint8_t *message,
                      size_t length,
