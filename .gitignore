@@ -57,3 +57,5 @@ build-aux/m4/lt~obsolete.m4
 # (which is called by configure script))
 Makefile
 
+.zig-cache/
+zig-out/

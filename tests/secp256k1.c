@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>
+#include <string.h>
 #include "urcrypt.h"
 
 static uint8_t context_ent[32] = {
@@ -16,6 +17,13 @@ static uint8_t scalar_0[32] = {
   0xf9, 0x9b, 0x45, 0x3c, 0x1d, 0x30, 0x41, 0x34,
   0x13, 0x42, 0x2d, 0x70, 0x64, 0x83, 0xbf, 0xa0,
   0xf9, 0x8a, 0x5e, 0x88, 0x62, 0x66, 0xe7, 0xae, 
+};
+
+static uint8_t scalar_1[32] = {
+  0xfc, 0xde, 0x2b, 0x2e, 0xdb, 0xa5, 0x6b, 0xf4,
+  0x08, 0x60, 0x1f, 0xb7, 0x21, 0xfe, 0x9b, 0x5c,
+  0x33, 0x8d, 0x10, 0xee, 0x42, 0x9e, 0xa0, 0x4f,
+  0xae, 0x55, 0x11, 0xb6, 0x8f, 0xbf, 0x8f, 0xb9, 
 };
 
 static urcrypt_secp_context* sec_u;
@@ -43,17 +51,35 @@ _cs_secp_stop()
 int main(int argc, char** argv) {
   _cs_secp_init();
 
-  uint8_t point[65];
-  urcrypt_secp_point_from_scalar(sec_u, scalar_0, point);
+  uint8_t cmp_point[33];
+  urcrypt_secp_cmp_point_from_scalar(sec_u, scalar_0, cmp_point);
 
-  printf("x: ");
-  for (unsigned int i = 0; i < 32; i++) {
-    printf("%02x", point[i + 1]);
+  printf("compressed pubkey: ");
+  for (unsigned int i = 0; i < 33; i++) {
+    printf("%02x", cmp_point[i]);
   }
 
-  printf("\ny: ");
+  // printf("\ny: ");
+  // for (unsigned int i = 0; i < 32; i++) {
+  //   printf("%02x", point[i + 33]);
+  // }
+  printf("\n");
+
+  uint8_t secret[32];
+  memcpy(secret, scalar_0, 32);
+  urcrypt_secp_scalar_tweak_add(sec_u, secret, scalar_1);
+
+  printf("tweaked seckey: ");
   for (unsigned int i = 0; i < 32; i++) {
-    printf("%02x", point[i + 33]);
+    printf("%02x", secret[i]);
+  }
+  printf("\n");
+
+  urcrypt_secp_cmp_point_tweak_add(sec_u, cmp_point, scalar_1);
+
+  printf("tweaked pubkey: ");
+  for (unsigned int i = 0; i < 33; i++) {
+    printf("%02x", cmp_point[i]);
   }
   printf("\n");
 
