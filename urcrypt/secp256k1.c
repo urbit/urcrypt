@@ -245,30 +245,76 @@ urcrypt_secp_schnorr_veri(urcrypt_secp_context* context,
 }
 
 int
-urcrypt_secp_point_from_scalar(urcrypt_secp_context* context,
-                                const uint8_t scalar[32],
-                                uint8_t point[65]) {
+urcrypt_secp_cmp_point_from_scalar(urcrypt_secp_context* context,
+                               const uint8_t scalar[32],
+                               uint8_t cmp_point[33]) {
   urcrypt__reverse(32, scalar);
+
   secp256k1_keypair keypair;
   secp256k1_pubkey pubkey;
 
   secp256k1_keypair_create(context->secp, &keypair, scalar);
-
   secp256k1_keypair_pub(context->secp, &pubkey, &keypair);
 
-  size_t output_len = 65;
+  size_t output_len = 33;
   if (1 != secp256k1_ec_pubkey_serialize(
           context->secp,
-          point,
+          cmp_point,
           &output_len,
           &pubkey,
-          SECP256K1_FLAGS_TYPE_COMPRESSION)) {
+          SECP256K1_EC_COMPRESSED)) {
     return -1;
   }
 
-  urcrypt__reverse(32, point + 1);
-  urcrypt__reverse(32, point + 33);
+  urcrypt__reverse(33, cmp_point);
 
   return 0;
 }
 
+int
+urcrypt_secp_scalar_tweak_add(urcrypt_secp_context* context,
+                              uint8_t scalar[32],
+                              const uint8_t tweak[32]) {
+  urcrypt__reverse(32, scalar);
+  urcrypt__reverse(32, tweak);
+
+  if (1 != secp256k1_ec_seckey_tweak_add(context, scalar, tweak)) {
+    return -1;
+  }
+
+  urcrypt__reverse(32, scalar);
+
+  return 0;
+}
+
+int
+urcrypt_secp_cmp_point_tweak_add(urcrypt_secp_context* context,
+                             uint8_t cmp_point[33],
+                             const uint8_t tweak[32]) {
+  urcrypt__reverse(33, cmp_point);
+  urcrypt__reverse(32, tweak);
+
+  secp256k1_pubkey point;
+  size_t cmp_len = 33;
+
+  if (1 != secp256k1_ec_pubkey_parse(context->secp, &point, cmp_point, cmp_len)) {
+    return -1; //invalid compressed point
+  }
+
+  if (1 != secp256k1_ec_pubkey_tweak_add(context->secp, &point, tweak)) {
+    return -2; //invalid tweak
+  }
+
+  if (1 != secp256k1_ec_pubkey_serialize(
+           context->secp,
+           cmp_point,
+           &cmp_len,
+           &point,
+           SECP256K1_EC_COMPRESSED)) {
+    return -3; //something is very wrong
+  }
+
+  urcrypt__reverse(33, cmp_point);
+
+  return 0;
+}
