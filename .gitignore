@@ -67,3 +67,8 @@ config.log
 **/*.o
 **/*.la
 **/*.lo
+
+# tests
+build-aux/test-driver
+test_runner*
+test-suite.log

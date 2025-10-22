@@ -162,3 +162,36 @@ libkeccak_tiny_la_CFLAGS = -std=c11 -Wextra -Wpedantic -Wall
 libkeccak_tiny_la_SOURCES = keccak-tiny/keccak-tiny.c \
 		       keccak-tiny/define-macros.h \
 		       keccak-tiny/keccak-tiny.h
+
+# test suite
+TESTS = test_runner
+check_PROGRAMS = test_runner
+
+test_runner_SOURCES = tests/test_runner.c \
+		      tests/test_argon2.c \
+		      tests/test_blake3.c \
+		      tests/test_ed25519.c \
+		      tests/test_ge_additions.c \
+		      tests/test_keccak.c \
+		      tests/test_monocypher.c \
+		      tests/test_murmur3.c \
+		      tests/test_scrypt.c \
+		      tests/test_urcrypt.c
+
+test_runner_CPPFLAGS = -I$(srcdir) \
+		       -I$(srcdir)/ed25519/src \
+		       -I$(srcdir)/ge-additions \
+		       -I$(srcdir)/argon2/include \
+		       -I$(srcdir)/blake3 \
+		       -I$(srcdir)/monocypher \
+		       -I$(srcdir)/keccak-tiny \
+		       -I$(srcdir)/scrypt
+
+test_runner_CFLAGS = $(LIBCRYPTO_CFLAGS) \
+		     $(LIBSECP256K1_CFLAGS) \
+		     $(LIBAES_SIV_CFLAGS)
+
+test_runner_LDADD = liburcrypt.la \
+		    $(LIBCRYPTO_LIBS) \
+		    $(LIBSECP256K1_LIBS) \
+		    $(LIBAES_SIV_LIBS)

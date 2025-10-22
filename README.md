@@ -39,3 +39,15 @@ Installation
 ------------
 Note that, in addition to standard `autotools` packages, `urcrypt` requires
 `autoconf-archive` in order to use a macro it provides.
+
+Testing
+-------
+The repository includes a comprehensive test suite covering all cryptographic
+modules. To build and run the tests:
+
+```bash
+make check
+```
+
+See the [tests/README.md](tests/README.md) for more information about the test
+framework and how to add new tests.
