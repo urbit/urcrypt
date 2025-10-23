@@ -1,5 +1,8 @@
 ACLOCAL_AMFLAGS = -I build-aux/m4
 
+# Use serial test harness to show test output in real-time
+AUTOMAKE_OPTIONS = color-tests serial-tests
+
 AM_CFLAGS = -Wall -g -O3
 
 lib_LTLIBRARIES = liburcrypt.la
@@ -51,7 +54,8 @@ liburcrypt_la_CFLAGS = $(LIBCRYPTO_CFLAGS) \
 		       $(LIBAES_SIV_CFLAGS)
 # urcrypt_ is used for public symbols, urcrypt__ for internal.
 liburcrypt_la_LDFLAGS = -export-symbols-regex '^urcrypt_[^_]' \
-												-version-info $(URCRYPT_LT_VERSION)
+												-version-info $(URCRYPT_LT_VERSION) \
+												-L/usr/local/lib -Wl,-rpath,/usr/local/lib
 liburcrypt_la_SOURCES = urcrypt/aes_cbc.c \
 			urcrypt/aes_ecb.c \
 			urcrypt/aes_siv.c \
@@ -190,6 +194,8 @@ test_runner_CPPFLAGS = -I$(srcdir) \
 test_runner_CFLAGS = $(LIBCRYPTO_CFLAGS) \
 		     $(LIBSECP256K1_CFLAGS) \
 		     $(LIBAES_SIV_CFLAGS)
+
+test_runner_LDFLAGS = -L/usr/local/lib -Wl,-rpath,/usr/local/lib
 
 test_runner_LDADD = liburcrypt.la \
 		    $(LIBCRYPTO_LIBS) \

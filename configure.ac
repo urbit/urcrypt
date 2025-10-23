@@ -57,8 +57,43 @@ PKG_INSTALLDIR
 # Checks for programs
 AC_PROG_CC
 
+# macOS/Homebrew support: Add common Homebrew paths to PKG_CONFIG_PATH
+# This helps find libraries installed via Homebrew on both Intel and Apple Silicon Macs
+AS_CASE([$host_os],
+  [darwin*], [
+    # Check for Homebrew installation
+    AC_MSG_CHECKING([for Homebrew])
+    AS_IF([test -d /opt/homebrew], [
+      HOMEBREW_PREFIX="/opt/homebrew"
+      AC_MSG_RESULT([found at $HOMEBREW_PREFIX (Apple Silicon)])
+    ], [test -d /usr/local/Cellar], [
+      HOMEBREW_PREFIX="/usr/local"
+      AC_MSG_RESULT([found at $HOMEBREW_PREFIX (Intel)])
+    ], [
+      HOMEBREW_PREFIX=""
+      AC_MSG_RESULT([not found])
+    ])
+    
+    # Add Homebrew paths to PKG_CONFIG_PATH if Homebrew is present
+    AS_IF([test -n "$HOMEBREW_PREFIX"], [
+      AS_IF([test -n "$PKG_CONFIG_PATH"], [
+        export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/lib/pkgconfig:$HOMEBREW_PREFIX/opt/openssl@3/lib/pkgconfig:$PKG_CONFIG_PATH"
+      ], [
+        export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/lib/pkgconfig:$HOMEBREW_PREFIX/opt/openssl@3/lib/pkgconfig"
+      ])
+      AC_MSG_NOTICE([Added Homebrew paths to PKG_CONFIG_PATH: $PKG_CONFIG_PATH])
+    ])
+  ]
+)
+
 # Checks for pkg-config capable libraries
-PKG_CHECK_MODULES([LIBSECP256K1], [libsecp256k1])
+PKG_CHECK_MODULES([LIBSECP256K1], [libsecp256k1], [],
+  [AC_MSG_ERROR([
+libsecp256k1 is required but was not found via pkg-config.
+
+On macOS with Homebrew:
+  brew install secp256k1
+])])
 save_CPPFLAGS=$CPPFLAGS
 CPPFLAGS="$CPPFLAGS $LIBSECP256K1_CFLAGS"
 AC_CHECK_HEADER([secp256k1_recovery.h], [],
@@ -66,7 +101,13 @@ AC_CHECK_HEADER([secp256k1_recovery.h], [],
 AC_CHECK_HEADER([secp256k1_schnorrsig.h], [],
                 [AC_MSG_ERROR([libsecp256k1 must have Schnorr signatures enabled.])])
 CPPFLAGS=$save_CPPFLAGS
-PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto])
+PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto], [],
+  [AC_MSG_ERROR([
+libcrypto (OpenSSL) is required but was not found via pkg-config.
+
+On macOS with Homebrew:
+  brew install openssl@3
+])])
 
 AS_IF([test "$enable_shared" == "yes"],
   [# ensure crypto will be shared for shared object (see README.md)
@@ -91,7 +132,19 @@ AS_IF([test "$enable_shared" == "yes"],
 # Checks for non pkg-config libraries
 AC_CHECK_LIB([aes_siv], [AES_SIV_CTX_new],
              [AC_SUBST([LIBAES_SIV_LIBS], "-laes_siv")],
-             [AC_MSG_ERROR([libaes_siv is required.])],
+             [AC_MSG_ERROR([
+libaes_siv is required but was not found.
+
+On macOS, you can install it from source:
+  git clone https://github.com/dfoxfranke/libaes_siv.git
+  cd libaes_siv
+  mkdir build && cd build
+  cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+  make
+  sudo make install
+
+Make sure /usr/local/lib is in your DYLD_LIBRARY_PATH or library search path.
+])],
              [-lcrypto])
 
 # Checks for header files.
