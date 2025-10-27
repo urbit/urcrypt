@@ -5,9 +5,9 @@
 #include <string.h>
 #include <stdint.h>
 
-/* Test result tracking */
-static int test_failures = 0;
-static int test_passes = 0;
+/* Test result tracking - defined in test_runner.c */
+extern int test_failures;
+extern int test_passes;
 
 /* Color codes for terminal output */
 #define COLOR_RED     "\x1b[31m"
@@ -59,6 +59,22 @@ static void print_hex(const char *label, const uint8_t *data, size_t len) {
     printf("%02x", data[i]);
   }
   printf("\n");
+}
+
+/* Helper function to convert hex string to bytes */
+static inline void hex_to_bytes(const char *hex, uint8_t *bytes, size_t len) {
+  for (size_t i = 0; i < len; i++) {
+    sscanf(hex + 2*i, "%2hhx", &bytes[i]);
+  }
+}
+
+/* Helper function to reverse bytes in place */
+static inline void reverse_bytes(uint8_t *bytes, size_t len) {
+  for (size_t i = 0; i < len/2; i++) {
+    uint8_t tmp = bytes[i];
+    bytes[i] = bytes[len - 1 - i];
+    bytes[len - 1 - i] = tmp;
+  }
 }
 
 #endif /* TEST_COMMON_H */

@@ -13,13 +13,6 @@
  * in test_ed25519.c. This suite focuses on the remaining ge_additions functions.
  */
 
-/* Helper function to convert hex string to bytes */
-static void hex_to_bytes(const char *hex, uint8_t *bytes, size_t len) {
-  for (size_t i = 0; i < len; i++) {
-    sscanf(hex + 2*i, "%2hhx", &bytes[i]);
-  }
-}
-
 /*
  * Test: urcrypt_ed_scalarmult - Basic functionality
  *

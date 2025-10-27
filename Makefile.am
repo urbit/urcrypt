@@ -179,8 +179,7 @@ test_runner_SOURCES = tests/test_runner.c \
 		      tests/test_keccak.c \
 		      tests/test_monocypher.c \
 		      tests/test_murmur3.c \
-		      tests/test_scrypt.c \
-		      tests/test_urcrypt.c
+		      tests/test_scrypt.c
 
 test_runner_CPPFLAGS = -I$(srcdir) \
 		       -I$(srcdir)/ed25519/src \

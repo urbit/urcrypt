@@ -11,13 +11,6 @@
  * Reference test vectors from: https://github.com/BLAKE3-team/BLAKE3/blob/master/test_vectors/test_vectors.json
  */
 
-/* Helper function to convert hex string to bytes */
-static void hex_to_bytes(const char *hex, uint8_t *bytes, size_t len) {
-  for (size_t i = 0; i < len; i++) {
-    sscanf(hex + 2*i, "%2hhx", &bytes[i]);
-  }
-}
-
 /* Helper function to get BLAKE3 IV as bytes */
 static void get_blake3_iv(uint8_t iv_bytes[32]) {
   const uint32_t IV[8] = {0x6A09E667UL, 0xBB67AE85UL, 0x3C6EF372UL,

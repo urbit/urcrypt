@@ -20,22 +20,6 @@
  * Note: urcrypt outputs hashes in little-endian byte order per Urbit convention.
  */
 
-/* Helper function to convert hex string to bytes */
-static void hex_to_bytes(const char *hex, uint8_t *bytes, size_t len) {
-  for (size_t i = 0; i < len; i++) {
-    sscanf(hex + 2*i, "%2hhx", &bytes[i]);
-  }
-}
-
-/* Helper function to reverse bytes (for comparing with standard test vectors) */
-static void reverse_bytes(uint8_t *bytes, size_t len) {
-  for (size_t i = 0; i < len/2; i++) {
-    uint8_t tmp = bytes[i];
-    bytes[i] = bytes[len - 1 - i];
-    bytes[len - 1 - i] = tmp;
-  }
-}
-
 /*
  * Test: Keccak-224 - Empty string
  */
