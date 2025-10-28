@@ -77,4 +77,13 @@ static inline void reverse_bytes(uint8_t *bytes, size_t len) {
   }
 }
 
+/* Test runner macro to eliminate repetition in suite functions */
+#define RUN_TEST(test_func) \
+  do { \
+    printf("  Running " #test_func "...\n"); \
+    if ((test_func)() != 0) { \
+      suite_failures++; \
+    } \
+  } while (0)
+
 #endif /* TEST_COMMON_H */

@@ -335,80 +335,21 @@ static int test_keccak_variants_differ(void) {
 int suite_keccak(void) {
   int suite_failures = 0;
 
-  printf("  Running test_keccak_224_empty...\n");
-  if (test_keccak_224_empty() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keccak_224_41...\n");
-  if (test_keccak_224_41() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keccak_224_asd...\n");
-  if (test_keccak_224_asd() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keccak_256_empty...\n");
-  if (test_keccak_256_empty() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keccak_256_41...\n");
-  if (test_keccak_256_41() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keccak_256_asd...\n");
-  if (test_keccak_256_asd() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keccak_384_empty...\n");
-  if (test_keccak_384_empty() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keccak_384_41...\n");
-  if (test_keccak_384_41() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keccak_384_asd...\n");
-  if (test_keccak_384_asd() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keccak_512_empty...\n");
-  if (test_keccak_512_empty() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keccak_512_41...\n");
-  if (test_keccak_512_41() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keccak_512_asd...\n");
-  if (test_keccak_512_asd() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keccak_determinism...\n");
-  if (test_keccak_determinism() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keccak_longer_message...\n");
-  if (test_keccak_longer_message() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keccak_variants_differ...\n");
-  if (test_keccak_variants_differ() != 0) {
-    suite_failures++;
-  }
+  RUN_TEST(test_keccak_224_empty);
+  RUN_TEST(test_keccak_224_41);
+  RUN_TEST(test_keccak_224_asd);
+  RUN_TEST(test_keccak_256_empty);
+  RUN_TEST(test_keccak_256_41);
+  RUN_TEST(test_keccak_256_asd);
+  RUN_TEST(test_keccak_384_empty);
+  RUN_TEST(test_keccak_384_41);
+  RUN_TEST(test_keccak_384_asd);
+  RUN_TEST(test_keccak_512_empty);
+  RUN_TEST(test_keccak_512_41);
+  RUN_TEST(test_keccak_512_asd);
+  RUN_TEST(test_keccak_determinism);
+  RUN_TEST(test_keccak_longer_message);
+  RUN_TEST(test_keccak_variants_differ);
 
   return suite_failures;
 }

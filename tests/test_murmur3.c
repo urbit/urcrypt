@@ -18,10 +18,7 @@ static int test_placeholder(void) {
 int suite_murmur3(void) {
   int suite_failures = 0;
 
-  printf("  Running test_placeholder...\n");
-  if (test_placeholder() != 0) {
-    suite_failures++;
-  }
+  RUN_TEST(test_placeholder);
 
   return suite_failures;
 }

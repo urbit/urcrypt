@@ -312,50 +312,15 @@ static int test_add_double_scalarmult_consistency(void) {
 int suite_ge_additions(void) {
   int suite_failures = 0;
 
-  printf("  Running test_scalarmult_basic...\n");
-  if (test_scalarmult_basic() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_scalarmult_consistency...\n");
-  if (test_scalarmult_consistency() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_scalarmult_invalid_scalar...\n");
-  if (test_scalarmult_invalid_scalar() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_scalarmult_commutativity...\n");
-  if (test_scalarmult_commutativity() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_add_scalarmult_scalarmult_base_basic...\n");
-  if (test_add_scalarmult_scalarmult_base_basic() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_add_scalarmult_scalarmult_base_manual...\n");
-  if (test_add_scalarmult_scalarmult_base_manual() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_add_double_scalarmult_basic...\n");
-  if (test_add_double_scalarmult_basic() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_add_double_scalarmult_manual...\n");
-  if (test_add_double_scalarmult_manual() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_add_double_scalarmult_consistency...\n");
-  if (test_add_double_scalarmult_consistency() != 0) {
-    suite_failures++;
-  }
+  RUN_TEST(test_scalarmult_basic);
+  RUN_TEST(test_scalarmult_consistency);
+  RUN_TEST(test_scalarmult_invalid_scalar);
+  RUN_TEST(test_scalarmult_commutativity);
+  RUN_TEST(test_add_scalarmult_scalarmult_base_basic);
+  RUN_TEST(test_add_scalarmult_scalarmult_base_manual);
+  RUN_TEST(test_add_double_scalarmult_basic);
+  RUN_TEST(test_add_double_scalarmult_manual);
+  RUN_TEST(test_add_double_scalarmult_consistency);
 
   return suite_failures;
 }

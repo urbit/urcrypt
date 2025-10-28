@@ -249,50 +249,15 @@ static int test_blake3_compress(void) {
 int suite_blake3(void) {
   int suite_failures = 0;
 
-  printf("  Running test_blake3_empty_input...\n");
-  if (test_blake3_empty_input() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_blake3_one_byte...\n");
-  if (test_blake3_one_byte() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_blake3_short_string...\n");
-  if (test_blake3_short_string() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_blake3_keyed_hash...\n");
-  if (test_blake3_keyed_hash() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_blake3_derive_key...\n");
-  if (test_blake3_derive_key() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_blake3_variable_output...\n");
-  if (test_blake3_variable_output() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_blake3_determinism...\n");
-  if (test_blake3_determinism() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_blake3_chunk_output...\n");
-  if (test_blake3_chunk_output() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_blake3_compress...\n");
-  if (test_blake3_compress() != 0) {
-    suite_failures++;
-  }
+  RUN_TEST(test_blake3_empty_input);
+  RUN_TEST(test_blake3_one_byte);
+  RUN_TEST(test_blake3_short_string);
+  RUN_TEST(test_blake3_keyed_hash);
+  RUN_TEST(test_blake3_derive_key);
+  RUN_TEST(test_blake3_variable_output);
+  RUN_TEST(test_blake3_determinism);
+  RUN_TEST(test_blake3_chunk_output);
+  RUN_TEST(test_blake3_compress);
 
   return suite_failures;
 }

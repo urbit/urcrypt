@@ -915,150 +915,35 @@ static int test_secp_schnorr_sign_verify(void) {
 int suite_urcrypt(void) {
   int suite_failures = 0;
 
-  printf("  Running test_sha1_empty...\n");
-  if (test_sha1_empty() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sha1_abc...\n");
-  if (test_sha1_abc() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sha1_longer...\n");
-  if (test_sha1_longer() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sha1_longer2...\n");
-  if (test_sha1_longer2() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sha1_determinism...\n");
-  if (test_sha1_determinism() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sha256_empty...\n");
-  if (test_sha256_empty() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sha256_abc...\n");
-  if (test_sha256_abc() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sha256_longer...\n");
-  if (test_sha256_longer() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sha256_longer2...\n");
-  if (test_sha256_longer2() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sha512_empty...\n");
-  if (test_sha512_empty() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sha512_abc...\n");
-  if (test_sha512_abc() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sha512_longer...\n");
-  if (test_sha512_longer() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sha512_longer2...\n");
-  if (test_sha512_longer2() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sha256_salt...\n");
-  if (test_sha256_salt() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_ripemd160_empty...\n");
-  if (test_ripemd160_empty() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_ripemd160_determinism...\n");
-  if (test_ripemd160_determinism() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_aes_ecb_128...\n");
-  if (test_aes_ecb_128() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_aes_ecb_192...\n");
-  if (test_aes_ecb_192() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_aes_ecb_256...\n");
-  if (test_aes_ecb_256() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_aes_cbc_128...\n");
-  if (test_aes_cbc_128() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_aes_cbc_192...\n");
-  if (test_aes_cbc_192() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_aes_cbc_256...\n");
-  if (test_aes_cbc_256() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_aes_siv_128...\n");
-  if (test_aes_siv_128() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_aes_siv_192...\n");
-  if (test_aes_siv_192() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_aes_siv_256...\n");
-  if (test_aes_siv_256() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_secp_context...\n");
-  if (test_secp_context() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_secp_make_pubkey...\n");
-  if (test_secp_make_pubkey() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_secp_sign_recover...\n");
-  if (test_secp_sign_recover() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_secp_schnorr_sign_verify...\n");
-  if (test_secp_schnorr_sign_verify() != 0) {
-    suite_failures++;
-  }
+  RUN_TEST(test_sha1_empty);
+  RUN_TEST(test_sha1_abc);
+  RUN_TEST(test_sha1_longer);
+  RUN_TEST(test_sha1_longer2);
+  RUN_TEST(test_sha1_determinism);
+  RUN_TEST(test_sha256_empty);
+  RUN_TEST(test_sha256_abc);
+  RUN_TEST(test_sha256_longer);
+  RUN_TEST(test_sha256_longer2);
+  RUN_TEST(test_sha512_empty);
+  RUN_TEST(test_sha512_abc);
+  RUN_TEST(test_sha512_longer);
+  RUN_TEST(test_sha512_longer2);
+  RUN_TEST(test_sha256_salt);
+  RUN_TEST(test_ripemd160_empty);
+  RUN_TEST(test_ripemd160_determinism);
+  RUN_TEST(test_aes_ecb_128);
+  RUN_TEST(test_aes_ecb_192);
+  RUN_TEST(test_aes_ecb_256);
+  RUN_TEST(test_aes_cbc_128);
+  RUN_TEST(test_aes_cbc_192);
+  RUN_TEST(test_aes_cbc_256);
+  RUN_TEST(test_aes_siv_128);
+  RUN_TEST(test_aes_siv_192);
+  RUN_TEST(test_aes_siv_256);
+  RUN_TEST(test_secp_context);
+  RUN_TEST(test_secp_make_pubkey);
+  RUN_TEST(test_secp_sign_recover);
+  RUN_TEST(test_secp_schnorr_sign_verify);
 
   return suite_failures;
 }

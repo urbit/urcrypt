@@ -378,65 +378,18 @@ static int test_blake2_key_too_long(void) {
 int suite_argon2(void) {
   int suite_failures = 0;
 
-  printf("  Running test_argon2i_reference_vector_1...\n");
-  if (test_argon2i_reference_vector_1() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_argon2i_reference_vector_2...\n");
-  if (test_argon2i_reference_vector_2() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_argon2i_reference_vector_3...\n");
-  if (test_argon2i_reference_vector_3() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_argon2i_reference_vector_4...\n");
-  if (test_argon2i_reference_vector_4() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_argon2i_reference_vector_5...\n");
-  if (test_argon2i_reference_vector_5() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_argon2_variants...\n");
-  if (test_argon2_variants() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_argon2_with_optional_params...\n");
-  if (test_argon2_with_optional_params() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_argon2_invalid_type...\n");
-  if (test_argon2_invalid_type() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_blake2_reference_vector...\n");
-  if (test_blake2_reference_vector() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_blake2_with_key...\n");
-  if (test_blake2_with_key() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_blake2_determinism...\n");
-  if (test_blake2_determinism() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_blake2_key_too_long...\n");
-  if (test_blake2_key_too_long() != 0) {
-    suite_failures++;
-  }
+  RUN_TEST(test_argon2i_reference_vector_1);
+  RUN_TEST(test_argon2i_reference_vector_2);
+  RUN_TEST(test_argon2i_reference_vector_3);
+  RUN_TEST(test_argon2i_reference_vector_4);
+  RUN_TEST(test_argon2i_reference_vector_5);
+  RUN_TEST(test_argon2_variants);
+  RUN_TEST(test_argon2_with_optional_params);
+  RUN_TEST(test_argon2_invalid_type);
+  RUN_TEST(test_blake2_reference_vector);
+  RUN_TEST(test_blake2_with_key);
+  RUN_TEST(test_blake2_determinism);
+  RUN_TEST(test_blake2_key_too_long);
 
   return suite_failures;
 }

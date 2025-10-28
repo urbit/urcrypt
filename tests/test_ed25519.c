@@ -444,75 +444,20 @@ static int test_point_neg(void) {
 int suite_ed25519(void) {
   int suite_failures = 0;
 
-  printf("  Running test_sign_verify_empty...\n");
-  if (test_sign_verify_empty() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sign_verify_one_byte...\n");
-  if (test_sign_verify_one_byte() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sign_verify_two_bytes...\n");
-  if (test_sign_verify_two_bytes() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_keypair_generation...\n");
-  if (test_keypair_generation() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_sign_vs_sign_raw...\n");
-  if (test_sign_vs_sign_raw() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_invalid_signature...\n");
-  if (test_invalid_signature() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_key_exchange...\n");
-  if (test_key_exchange() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_scalar_reduce...\n");
-  if (test_scalar_reduce() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_add_scalar_public...\n");
-  if (test_add_scalar_public() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_add_scalar_sign_verify...\n");
-  if (test_add_scalar_sign_verify() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_scalarmult_base...\n");
-  if (test_scalarmult_base() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_point_add...\n");
-  if (test_point_add() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_invalid_scalar...\n");
-  if (test_invalid_scalar() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_point_neg...\n");
-  if (test_point_neg() != 0) {
-    suite_failures++;
-  }
+  RUN_TEST(test_sign_verify_empty);
+  RUN_TEST(test_sign_verify_one_byte);
+  RUN_TEST(test_sign_verify_two_bytes);
+  RUN_TEST(test_keypair_generation);
+  RUN_TEST(test_sign_vs_sign_raw);
+  RUN_TEST(test_invalid_signature);
+  RUN_TEST(test_key_exchange);
+  RUN_TEST(test_scalar_reduce);
+  RUN_TEST(test_add_scalar_public);
+  RUN_TEST(test_add_scalar_sign_verify);
+  RUN_TEST(test_scalarmult_base);
+  RUN_TEST(test_point_add);
+  RUN_TEST(test_invalid_scalar);
+  RUN_TEST(test_point_neg);
 
   return suite_failures;
 }

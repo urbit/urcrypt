@@ -326,65 +326,18 @@ static int test_pbkdf2_iteration_variation(void) {
 int suite_scrypt(void) {
   int suite_failures = 0;
 
-  printf("  Running test_scrypt_rfc7914_vector1...\n");
-  if (test_scrypt_rfc7914_vector1() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_scrypt_rfc7914_vector2...\n");
-  if (test_scrypt_rfc7914_vector2() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_scrypt_rfc7914_vector3...\n");
-  if (test_scrypt_rfc7914_vector3() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_scrypt_short_output...\n");
-  if (test_scrypt_short_output() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_scrypt_determinism...\n");
-  if (test_scrypt_determinism() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_scrypt_parameter_variation...\n");
-  if (test_scrypt_parameter_variation() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_pbkdf2_rfc6070_vector1...\n");
-  if (test_pbkdf2_rfc6070_vector1() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_pbkdf2_rfc6070_vector2...\n");
-  if (test_pbkdf2_rfc6070_vector2() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_pbkdf2_rfc6070_vector3...\n");
-  if (test_pbkdf2_rfc6070_vector3() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_pbkdf2_rfc6070_vector4...\n");
-  if (test_pbkdf2_rfc6070_vector4() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_pbkdf2_determinism...\n");
-  if (test_pbkdf2_determinism() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_pbkdf2_iteration_variation...\n");
-  if (test_pbkdf2_iteration_variation() != 0) {
-    suite_failures++;
-  }
+  RUN_TEST(test_scrypt_rfc7914_vector1);
+  RUN_TEST(test_scrypt_rfc7914_vector2);
+  RUN_TEST(test_scrypt_rfc7914_vector3);
+  RUN_TEST(test_scrypt_short_output);
+  RUN_TEST(test_scrypt_determinism);
+  RUN_TEST(test_scrypt_parameter_variation);
+  RUN_TEST(test_pbkdf2_rfc6070_vector1);
+  RUN_TEST(test_pbkdf2_rfc6070_vector2);
+  RUN_TEST(test_pbkdf2_rfc6070_vector3);
+  RUN_TEST(test_pbkdf2_rfc6070_vector4);
+  RUN_TEST(test_pbkdf2_determinism);
+  RUN_TEST(test_pbkdf2_iteration_variation);
 
   return suite_failures;
 }

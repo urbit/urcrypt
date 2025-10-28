@@ -239,45 +239,14 @@ static int test_hchacha20_uniqueness(void) {
 int suite_monocypher(void) {
   int suite_failures = 0;
 
-  printf("  Running test_chacha20_zeros...\n");
-  if (test_chacha20_zeros() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_chacha20_sequence...\n");
-  if (test_chacha20_sequence() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_chacha20_text_encrypt...\n");
-  if (test_chacha20_text_encrypt() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_chacha20_determinism...\n");
-  if (test_chacha20_determinism() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_chacha20_counter...\n");
-  if (test_chacha20_counter() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_hchacha20_derivation...\n");
-  if (test_hchacha20_derivation() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_hchacha20_nonce_extraction...\n");
-  if (test_hchacha20_nonce_extraction() != 0) {
-    suite_failures++;
-  }
-
-  printf("  Running test_hchacha20_uniqueness...\n");
-  if (test_hchacha20_uniqueness() != 0) {
-    suite_failures++;
-  }
+  RUN_TEST(test_chacha20_zeros);
+  RUN_TEST(test_chacha20_sequence);
+  RUN_TEST(test_chacha20_text_encrypt);
+  RUN_TEST(test_chacha20_determinism);
+  RUN_TEST(test_chacha20_counter);
+  RUN_TEST(test_hchacha20_derivation);
+  RUN_TEST(test_hchacha20_nonce_extraction);
+  RUN_TEST(test_hchacha20_uniqueness);
 
   return suite_failures;
 }
