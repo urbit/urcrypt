@@ -179,7 +179,8 @@ test_runner_SOURCES = tests/test_runner.c \
 		      tests/test_keccak.c \
 		      tests/test_monocypher.c \
 		      tests/test_murmur3.c \
-		      tests/test_scrypt.c
+		      tests/test_scrypt.c \
+		      tests/test_urcrypt.c
 
 test_runner_CPPFLAGS = -I$(srcdir) \
 		       -I$(srcdir)/ed25519/src \
@@ -188,7 +189,8 @@ test_runner_CPPFLAGS = -I$(srcdir) \
 		       -I$(srcdir)/blake3 \
 		       -I$(srcdir)/monocypher \
 		       -I$(srcdir)/keccak-tiny \
-		       -I$(srcdir)/scrypt
+		       -I$(srcdir)/scrypt \
+		       -I$(srcdir)/urcrypt
 
 test_runner_CFLAGS = $(LIBCRYPTO_CFLAGS) \
 		     $(LIBSECP256K1_CFLAGS) \
