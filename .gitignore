@@ -70,5 +70,7 @@ config.log
 
 # tests
 build-aux/test-driver
-test_runner*
+test_runner
+test_runner.log
+test_runner.trs
 test-suite.log
