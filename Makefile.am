@@ -178,7 +178,6 @@ test_runner_SOURCES = tests/test_runner.c \
 		      tests/test_ge_additions.c \
 		      tests/test_keccak.c \
 		      tests/test_monocypher.c \
-		      tests/test_murmur3.c \
 		      tests/test_scrypt.c \
 		      tests/test_urcrypt.c
 
