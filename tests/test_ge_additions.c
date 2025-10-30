@@ -102,9 +102,9 @@ static int test_scalarmult_invalid_scalar(void) {
 }
 
 /*
- * Test: urcrypt_ed_scalarmult - Commutativity of operations
+ * Test: urcrypt_ed_scalarmult - Consistency with scalar commutativity
  *
- * Verify that scalar multiplication is consistent
+ * Verify that (a*G)*b == (b*G)*a, which holds because both equal (ab)*G
  */
 static int test_scalarmult_commutativity(void) {
   uint8_t scalar1[32], scalar2[32];

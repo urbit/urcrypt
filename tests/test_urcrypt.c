@@ -284,7 +284,7 @@ static int test_sha512_longer2(void) {
 /*
  * Test: SHA-256 with salt - Basic test
  *
- * Note: urcrypt_shas appears to be SHA-256 HMAC or salted SHA-256
+ * Note: urcrypt_shas computes SHA-256(salt XOR SHA-256(message))
  */
 static int test_sha256_salt(void) {
   uint8_t message[] = "test message";

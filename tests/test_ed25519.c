@@ -268,8 +268,8 @@ static int test_scalar_reduce(void) {
   }
   ASSERT(changed == 1, "ed25519 scalar_reduce should modify the input");
 
-  /* Reduced value should have specific properties (high bits cleared) */
-  /* After reduction, first 32 bytes contain the reduced scalar, rest are modified */
+  /* After reduction modulo L (group order), the first 32 bytes contain the reduced scalar.
+   * The remaining 32 bytes are overwritten as working space during the reduction. */
   return 0;
 }
 

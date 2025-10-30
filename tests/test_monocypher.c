@@ -175,7 +175,7 @@ static int test_hchacha20_derivation(void) {
   hex_to_bytes("82413b4227b27bfed30e42508a877d73"
                "a0f9e4d58a74a853c12ec41326d3ecdc", expected_key, 32);
 
-  /* Expected output nonce (last 8 bytes of input nonce) */
+  /* Expected output nonce (bytes 16-23 of input nonce) */
   hex_to_bytes("0000000000000000", expected_nonce, 8);
 
   /* Perform HChaCha20 key derivation */
