@@ -375,16 +375,20 @@ static int test_scalarmult_base(void) {
 static int test_point_add(void) {
   uint8_t scalar1[32], scalar2[32];
   uint8_t point1[32], point2[32], sum[32];
+  int result;
 
-  /* Generate two points */
+  /* Generate two points with valid scalars (high bit must be clear) */
   hex_to_bytes("9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60", scalar1, 32);
-  hex_to_bytes("4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb", scalar2, 32);
+  hex_to_bytes("4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a67b", scalar2, 32);
 
-  urcrypt_ed_scalarmult_base(scalar1, point1);
-  urcrypt_ed_scalarmult_base(scalar2, point2);
+  result = urcrypt_ed_scalarmult_base(scalar1, point1);
+  ASSERT(result == 0, "ed25519 scalarmult_base should succeed for scalar1");
+
+  result = urcrypt_ed_scalarmult_base(scalar2, point2);
+  ASSERT(result == 0, "ed25519 scalarmult_base should succeed for scalar2");
 
   /* Add the two points */
-  int result = urcrypt_ed_point_add(point1, point2, sum);
+  result = urcrypt_ed_point_add(point1, point2, sum);
 
   ASSERT(result == 0, "ed25519 point_add should succeed");
 
