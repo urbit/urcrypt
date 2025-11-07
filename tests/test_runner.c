@@ -7,14 +7,17 @@ int test_failures = 0;
 int test_passes = 0;
 
 /* Test suite declarations */
+int suite_aes(void);
 int suite_argon2(void);
 int suite_blake3(void);
 int suite_ed25519(void);
 int suite_ge_additions(void);
 int suite_keccak(void);
 int suite_monocypher(void);
+int suite_ripemd(void);
 int suite_scrypt(void);
-int suite_urcrypt(void);
+int suite_secp256k1(void);
+int suite_sha(void);
 
 /* Main test runner */
 int main(int argc, char *argv[]) {
@@ -42,14 +45,17 @@ int main(int argc, char *argv[]) {
       } \
     } while (0)
 
+  RUN_SUITE(aes);
   RUN_SUITE(argon2);
   RUN_SUITE(blake3);
   RUN_SUITE(ed25519);
   RUN_SUITE(ge_additions);
   RUN_SUITE(keccak);
   RUN_SUITE(monocypher);
+  RUN_SUITE(ripemd);
   RUN_SUITE(scrypt);
-  RUN_SUITE(urcrypt);
+  RUN_SUITE(secp256k1);
+  RUN_SUITE(sha);
 
   /* Print summary */
   printf("========================================\n");

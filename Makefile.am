@@ -172,14 +172,17 @@ TESTS = test_runner
 check_PROGRAMS = test_runner
 
 test_runner_SOURCES = tests/test_runner.c \
+		      tests/test_aes.c \
 		      tests/test_argon2.c \
 		      tests/test_blake3.c \
 		      tests/test_ed25519.c \
 		      tests/test_ge_additions.c \
 		      tests/test_keccak.c \
 		      tests/test_monocypher.c \
+		      tests/test_ripemd.c \
 		      tests/test_scrypt.c \
-		      tests/test_urcrypt.c
+		      tests/test_secp256k1.c \
+		      tests/test_sha.c
 
 test_runner_CPPFLAGS = -I$(srcdir) \
 		       -I$(srcdir)/ed25519/src \
