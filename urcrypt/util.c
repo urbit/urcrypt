@@ -1,7 +1,7 @@
 #include "urcrypt.h"
 
 void
-urcrypt__reverse(size_t size, uint8_t *ptr) {
+urcrypt_reverse(size_t size, uint8_t *ptr) {
   if ( size > 0 ) {
     size_t i, j;
     uint8_t tmp;

@@ -46,8 +46,8 @@ urcrypt_secp_destroy(urcrypt_secp_context *context)
 int
 urcrypt_secp_make(uint8_t hash[32], uint8_t key[32], uint8_t out[32])
 {
-  urcrypt__reverse(32, hash);
-  urcrypt__reverse(32, key);
+  urcrypt_reverse(32, hash);
+  urcrypt_reverse(32, key);
 
   if ( 1 != secp256k1_nonce_function_rfc6979(
     out,   // OUT: return arg for nonce
@@ -59,7 +59,7 @@ urcrypt_secp_make(uint8_t hash[32], uint8_t key[32], uint8_t out[32])
     return -1;
   }
   else {
-    urcrypt__reverse(32, out);
+    urcrypt_reverse(32, out);
     return 0;
   }
 }
@@ -74,8 +74,8 @@ urcrypt_secp_sign(urcrypt_secp_context* context,
 {
   secp256k1_ecdsa_recoverable_signature signature;
 
-  urcrypt__reverse(32, hash);
-  urcrypt__reverse(32, key);
+  urcrypt_reverse(32, hash);
+  urcrypt_reverse(32, key);
 
   /* sign
      N.B. if we want the 'v' field we can't use default secp256k1_ecdsa_sign(),
@@ -154,7 +154,7 @@ urcrypt_secp_reco(urcrypt_secp_context* context,
     else {
       secp256k1_pubkey public;
       memset(&public, 0, sizeof(secp256k1_pubkey));
-      urcrypt__reverse(32, hash);
+      urcrypt_reverse(32, hash);
       if ( 1 != secp256k1_ecdsa_recover(
             context->secp, /* IN:  context */
             &public,       /* OUT: pub key */
@@ -208,9 +208,9 @@ urcrypt_secp_schnorr_sign(urcrypt_secp_context* context,
 {
   secp256k1_keypair keypair;
 
-  urcrypt__reverse(32, key);
-  urcrypt__reverse(32, msg);
-  urcrypt__reverse(32, aux);
+  urcrypt_reverse(32, key);
+  urcrypt_reverse(32, msg);
+  urcrypt_reverse(32, aux);
 
   if ( 1 != secp256k1_keypair_create(context->secp, &keypair, key) ) {
     return -1;
@@ -219,7 +219,7 @@ urcrypt_secp_schnorr_sign(urcrypt_secp_context* context,
     return -1;
   }
 
-  urcrypt__reverse(64, out_sig);
+  urcrypt_reverse(64, out_sig);
   return 0;
 }
 
@@ -231,9 +231,9 @@ urcrypt_secp_schnorr_veri(urcrypt_secp_context* context,
 {
   secp256k1_xonly_pubkey pubkey;
 
-  urcrypt__reverse(64, sig);
-  urcrypt__reverse(32, msg);
-  urcrypt__reverse(32, pub);
+  urcrypt_reverse(64, sig);
+  urcrypt_reverse(32, msg);
+  urcrypt_reverse(32, pub);
 
   if ( 1 != secp256k1_xonly_pubkey_parse(context->secp, &pubkey, pub) ) {
     return false;

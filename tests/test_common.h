@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include "urcrypt/util.h"
 
 /* Test result tracking - defined in test_runner.c */
 extern int test_failures;
@@ -65,15 +66,6 @@ static void print_hex(const char *label, const uint8_t *data, size_t len) {
 static inline void hex_to_bytes(const char *hex, uint8_t *bytes, size_t len) {
   for (size_t i = 0; i < len; i++) {
     sscanf(hex + 2*i, "%2hhx", &bytes[i]);
-  }
-}
-
-/* Helper function to reverse bytes in place */
-static inline void reverse_bytes(uint8_t *bytes, size_t len) {
-  for (size_t i = 0; i < len/2; i++) {
-    uint8_t tmp = bytes[i];
-    bytes[i] = bytes[len - 1 - i];
-    bytes[len - 1 - i] = tmp;
   }
 }
 

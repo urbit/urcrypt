@@ -38,7 +38,7 @@ static int test_argon2i_reference_vector_1(void) {
   /* Expected output (reversed from reference) */
   uint8_t expected[32];
   hex_to_bytes("f6c4db4a54e2a370627aff3db6176b94a2a209a62c8e36152711802f7b30c694", expected, 32);
-  reverse_bytes(expected, 32);
+  urcrypt_reverse(32, expected);
 
   error = urcrypt_argon2(
     urcrypt_argon2_i, 0x10, 1, 65536, 2,
@@ -69,7 +69,7 @@ static int test_argon2i_reference_vector_2(void) {
 
   uint8_t expected[32];
   hex_to_bytes("fd4dd83d762c49bdeaf57c47bdcd0c2f1babf863fdeb490df63ede9975fccf06", expected, 32);
-  reverse_bytes(expected, 32);
+  urcrypt_reverse(32, expected);
 
   error = urcrypt_argon2(
     urcrypt_argon2_i, 0x10, 1, 256, 2,
@@ -100,7 +100,7 @@ static int test_argon2i_reference_vector_3(void) {
 
   uint8_t expected[32];
   hex_to_bytes("b6c11560a6a9d61eac706b79a2f97d68b4463aa3ad87e00c07e2b01e90c564fb", expected, 32);
-  reverse_bytes(expected, 32);
+  urcrypt_reverse(32, expected);
 
   error = urcrypt_argon2(
     urcrypt_argon2_i, 0x10, 2, 256, 2,
@@ -131,7 +131,7 @@ static int test_argon2i_reference_vector_4(void) {
 
   uint8_t expected[32];
   hex_to_bytes("e9c902074b6754531a3a0be519e5baf404b30ce69b3f01ac3bf21229960109a3", expected, 32);
-  reverse_bytes(expected, 32);
+  urcrypt_reverse(32, expected);
 
   error = urcrypt_argon2(
     urcrypt_argon2_i, 0x10, 1, 65536, 2,
@@ -162,7 +162,7 @@ static int test_argon2i_reference_vector_5(void) {
 
   uint8_t expected[32];
   hex_to_bytes("79a103b90fe8aef8570cb31fc8b22259778916f8336b7bdac3892569d4f1c497", expected, 32);
-  reverse_bytes(expected, 32);
+  urcrypt_reverse(32, expected);
 
   error = urcrypt_argon2(
     urcrypt_argon2_i, 0x10, 1, 65536, 2,
@@ -299,7 +299,7 @@ static int test_blake2_reference_vector(void) {
   hex_to_bytes("786a02f742015903c6c6fd852552d272912f4740e15847618a86e217f71f5419"
                "d25e1031afee585313896444934eb04b903a685b1448b755d56f701afe9be2ce",
                expected, 64);
-  reverse_bytes(expected, 64);
+  urcrypt_reverse(64, expected);
 
   result = urcrypt_blake2(0, msg, 0, NULL, 64, out);
 
@@ -319,7 +319,7 @@ static int test_blake2_with_key(void) {
   char msg[] = "hello";
   uint8_t key[16] = {0};
   reverse_string(msg, 5);
-  reverse_bytes(key, 16);
+  urcrypt_reverse(16, key);
 
   result = urcrypt_blake2(5, (uint8_t*)msg, 16, key, 32, out);
 
@@ -342,8 +342,8 @@ static int test_blake2_determinism(void) {
 
   reverse_string(msg1, 12);
   reverse_string(msg2, 12);
-  reverse_bytes(key1, 8);
-  reverse_bytes(key2, 8);
+  urcrypt_reverse(8, key1);
+  urcrypt_reverse(8, key2);
 
   result = urcrypt_blake2(12, (uint8_t*)msg1, 8, key1, 64, out1);
   ASSERT(result == 0, "first blake2 run should succeed");
