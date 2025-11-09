@@ -52,10 +52,10 @@ urcrypt__cbc_help(uint8_t **message_ptr,
   else {
     uint8_t *out = *message_ptr;
     size_t length = *length_ptr;
-    urcrypt_reverse(16, ivec);
-    urcrypt_reverse(length, out);
+    urcrypt__reverse(16, ivec);
+    urcrypt__reverse(length, out);
     AES_cbc_encrypt(out, out, length, key, ivec, enc);
-    urcrypt_reverse(length, out);
+    urcrypt__reverse(length, out);
     return 0;
   }
 }
@@ -69,7 +69,7 @@ urcrypt_aes_cbca_en(uint8_t **message_ptr,
 {
   AES_KEY aes_key;
 
-  urcrypt_reverse(16, key);
+  urcrypt__reverse(16, key);
 
   if ( 0 != AES_set_encrypt_key(key, 128, &aes_key) ) {
     return -1;
@@ -89,7 +89,7 @@ urcrypt_aes_cbca_de(uint8_t **message_ptr,
 {
   AES_KEY aes_key;
 
-  urcrypt_reverse(16, key);
+  urcrypt__reverse(16, key);
 
   if ( 0 != AES_set_decrypt_key(key, 128, &aes_key) ) {
     return -1;
@@ -109,7 +109,7 @@ urcrypt_aes_cbcb_en(uint8_t **message_ptr,
 {
   AES_KEY aes_key;
 
-  urcrypt_reverse(24, key);
+  urcrypt__reverse(24, key);
 
   if ( 0 != AES_set_encrypt_key(key, 192, &aes_key) ) {
     return -1;
@@ -129,7 +129,7 @@ urcrypt_aes_cbcb_de(uint8_t **message_ptr,
 {
   AES_KEY aes_key;
 
-  urcrypt_reverse(24, key);
+  urcrypt__reverse(24, key);
 
   if ( 0 != AES_set_decrypt_key(key, 192, &aes_key) ) {
     return -1;
@@ -149,7 +149,7 @@ urcrypt_aes_cbcc_en(uint8_t **message_ptr,
 {
   AES_KEY aes_key;
 
-  urcrypt_reverse(32, key);
+  urcrypt__reverse(32, key);
 
   if ( 0 != AES_set_encrypt_key(key, 256, &aes_key) ) {
     return -1;
@@ -169,7 +169,7 @@ urcrypt_aes_cbcc_de(uint8_t **message_ptr,
 {
   AES_KEY aes_key;
 
-  urcrypt_reverse(32, key);
+  urcrypt__reverse(32, key);
 
   if ( 0 != AES_set_decrypt_key(key, 256, &aes_key) ) {
     return -1;

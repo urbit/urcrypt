@@ -11,9 +11,9 @@ urcrypt_ripemd160(uint8_t *message, size_t length, uint8_t out[20])
     return -1;
   }
   else {
-    urcrypt_reverse(length, message);
+    urcrypt__reverse(length, message);
     RIPEMD160(message, n, out);
-    urcrypt_reverse(20, out);
+    urcrypt__reverse(20, out);
     return 0;
   }
 }

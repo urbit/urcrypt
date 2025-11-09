@@ -25,7 +25,7 @@ static int test_ripemd160_empty(void) {
   /* RIPEMD-160("") = 9c1185a5c5e9fc54612808977ee8f548b2258d31 (big-endian)
    * urcrypt reverses input and output, so we reverse the expected vector */
   hex_to_bytes("9c1185a5c5e9fc54612808977ee8f548b2258d31", expected, 20);
-  urcrypt_reverse(20, expected);
+  urcrypt__reverse(20, expected);
 
   int ret = urcrypt_ripemd160(message, 0, out);
 

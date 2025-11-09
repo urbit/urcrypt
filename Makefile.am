@@ -201,6 +201,7 @@ test_runner_CFLAGS = $(LIBCRYPTO_CFLAGS) \
 test_runner_LDFLAGS = -L/usr/local/lib -Wl,-rpath,/usr/local/lib
 
 test_runner_LDADD = liburcrypt.la \
+		    urcrypt/liburcrypt_la-util.o \
 		    $(LIBCRYPTO_LIBS) \
 		    $(LIBSECP256K1_LIBS) \
 		    $(LIBAES_SIV_LIBS)

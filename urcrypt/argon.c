@@ -54,10 +54,10 @@ urcrypt_argon2(uint8_t  type,
         break;
     }
 
-    urcrypt_reverse(secret_length, secret);
-    urcrypt_reverse(associated_length, associated);
-    urcrypt_reverse(password_length, password);
-    urcrypt_reverse(salt_length, salt);
+    urcrypt__reverse(secret_length, secret);
+    urcrypt__reverse(associated_length, associated);
+    urcrypt__reverse(password_length, password);
+    urcrypt__reverse(salt_length, salt);
 
     argon2_context context = {
       out,                   // output array, at least [digest length] in size
@@ -86,7 +86,7 @@ urcrypt_argon2(uint8_t  type,
       return argon2_error_message(result);
     }
     else {
-      urcrypt_reverse(out_length, out);
+      urcrypt__reverse(out_length, out);
       return NULL;
     }
   }
@@ -104,8 +104,8 @@ urcrypt_blake2(size_t message_length,
     return -1;
   }
   else {
-    urcrypt_reverse(message_length, message);
-    urcrypt_reverse(key_length, key);
+    urcrypt__reverse(message_length, message);
+    urcrypt__reverse(key_length, key);
 
     if ( 0 != blake2b(out, out_length,
                       message, message_length,
@@ -113,7 +113,7 @@ urcrypt_blake2(size_t message_length,
       return -1;
     }
     else {
-      urcrypt_reverse(out_length, out);
+      urcrypt__reverse(out_length, out);
       return 0;
     }
   }

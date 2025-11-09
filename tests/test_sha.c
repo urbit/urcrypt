@@ -31,7 +31,7 @@ static int test_sha1_empty(void) {
   /* SHA-1("") = da39a3ee5e6b4b0d3255bfef95601890afd80709 (big-endian)
    * urcrypt reverses input and output, so we reverse the expected vector */
   hex_to_bytes("da39a3ee5e6b4b0d3255bfef95601890afd80709", expected, 20);
-  urcrypt_reverse(20, expected);
+  urcrypt__reverse(20, expected);
 
   urcrypt_sha1(message, 0, out);
 
@@ -45,9 +45,9 @@ static int test_sha1_abc(void) {
   uint8_t out[20];
   uint8_t expected[20];
 
-  urcrypt_reverse(3, message);
+  urcrypt__reverse(3, message);
   hex_to_bytes("a9993e364706816aba3e25717850c26c9cd0d89d", expected, 20);
-  urcrypt_reverse(20, expected);
+  urcrypt__reverse(20, expected);
 
   urcrypt_sha1(message, 3, out);
 
@@ -64,9 +64,9 @@ static int test_sha1_longer(void) {
   uint8_t out[20];
   uint8_t expected[20];
 
-  urcrypt_reverse(56, message);
+  urcrypt__reverse(56, message);
   hex_to_bytes("84983e441c3bd26ebaae4aa1f95129e5e54670f1", expected, 20);
-  urcrypt_reverse(20, expected);
+  urcrypt__reverse(20, expected);
 
   urcrypt_sha1(message, 56, out);
 
@@ -83,9 +83,9 @@ static int test_sha1_longer2(void) {
   uint8_t out[20];
   uint8_t expected[20];
 
-  urcrypt_reverse(112, message);
+  urcrypt__reverse(112, message);
   hex_to_bytes("a49b2446a02c645bf419f995b67091253a04a259", expected, 20);
-  urcrypt_reverse(20, expected);
+  urcrypt__reverse(20, expected);
 
   urcrypt_sha1(message, 112, out);
 

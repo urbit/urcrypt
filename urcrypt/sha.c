@@ -5,9 +5,9 @@
 void
 urcrypt_sha1(uint8_t *message, size_t length, uint8_t out[20])
 {
-  urcrypt_reverse(length, message);
+  urcrypt__reverse(length, message);
   SHA1(message, length, out);
-  urcrypt_reverse(20, out);
+  urcrypt__reverse(20, out);
 }
 
 void

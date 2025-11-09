@@ -7,7 +7,7 @@
                             uint8_t out[byts]) \
   { \
     if ( 0 == keccak_##bits(out, byts, message, length) ) { \
-      urcrypt_reverse(byts, out); \
+      urcrypt__reverse(byts, out); \
       return 0; \
     } \
     else { \
