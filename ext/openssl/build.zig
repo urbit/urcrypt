@@ -1,6 +1,6 @@
 const std = @import("std");
 
-pub fn build(b: *std.Build) !void {
+pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
@@ -14,13 +14,13 @@ pub fn build(b: *std.Build) !void {
 
     const linux_cflags = .{};
 
-    const crypto = try libcrypto(
+    const crypto = libcrypto(
         b,
         target,
         optimize,
-        if (target.result.isDarwin()) &macos_cflags else &linux_cflags,
+        if (target.result.os.tag.isDarwin()) &macos_cflags else &linux_cflags,
     );
-    if (target.result.isDarwin() and !target.query.isNative()) {
+    if (target.result.os.tag.isDarwin() and !target.query.isNative()) {
         const macos_sdk = b.lazyDependency("macos_sdk", .{
             .target = target,
             .optimize = optimize,
@@ -37,7 +37,7 @@ pub fn build(b: *std.Build) !void {
         b,
         target,
         optimize,
-        if (target.result.isDarwin()) &macos_cflags else &linux_cflags,
+        if (target.result.os.tag.isDarwin()) &macos_cflags else &linux_cflags,
     ));
 }
 
@@ -46,7 +46,7 @@ fn libcrypto(
     target: std.Build.ResolvedTarget,
     optimize: std.builtin.OptimizeMode,
     cflags: []const []const u8,
-) !*std.Build.Step.Compile {
+) *std.Build.Step.Compile {
     const t = target.result;
 
     const dep = b.dependency("openssl", .{
@@ -54,10 +54,13 @@ fn libcrypto(
         .optimize = optimize,
     });
 
-    const lib = b.addStaticLibrary(.{
+    const lib = b.addLibrary(.{
+        .linkage = .static,
         .name = "crypto",
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+        }),
     });
 
     lib.pie = true;
@@ -113,7 +116,7 @@ fn libcrypto(
     // lib.root_module.addCMacro("OPENSSL_NO_STDIO", "");
     // lib.root_module.addCMacro("OSSL_PKEY_PARAM_RSA_DERIVE_FROM_PQ", "1");
 
-    if (t.isDarwin() and t.cpu.arch.isAARCH64()) {
+    if (t.os.tag.isDarwin() and t.cpu.arch.isAARCH64()) {
         lib.addIncludePath(b.path("gen/macos-aarch64/include"));
         lib.addIncludePath(b.path("gen/macos-aarch64/include/crypto"));
         lib.addIncludePath(b.path("gen/macos-aarch64/include/openssl"));
@@ -163,7 +166,7 @@ fn libcrypto(
         });
     }
 
-    if (t.isDarwin() and t.cpu.arch == .x86_64) {
+    if (t.os.tag.isDarwin() and t.cpu.arch == .x86_64) {
         lib.addIncludePath(b.path("gen/macos-x86_64/include"));
         lib.addIncludePath(b.path("gen/macos-x86_64/include/crypto"));
         lib.addIncludePath(b.path("gen/macos-x86_64/include/openssl"));
@@ -247,16 +250,6 @@ fn libcrypto(
         });
     }
 
-    var srcs = std.ArrayList([]const u8).init(b.allocator);
-    defer srcs.deinit();
-    try srcs.appendSlice(&common_crypto_sources);
-
-    if (t.os.tag == .linux) {
-        try srcs.appendSlice(&.{
-            "engines/e_afalg.c",
-        });
-    }
-
     lib.addCSourceFiles(.{
         .root = dep.path(""),
         .files = switch (t.cpu.arch) {
@@ -286,9 +279,17 @@ fn libcrypto(
 
     lib.addCSourceFiles(.{
         .root = dep.path(""),
-        .files = srcs.items,
+        .files = &common_crypto_sources,
         .flags = cflags,
     });
+
+    if (t.os.tag == .linux) {
+        lib.addCSourceFiles(.{
+            .root = dep.path(""),
+            .files = &.{"engines/e_afalg.c"},
+            .flags = cflags,
+        });
+    }
 
     lib.installHeadersDirectory(dep.path("include/crypto"), "crypto", .{});
     lib.installHeadersDirectory(dep.path("include/internal"), "internal", .{});
@@ -308,10 +309,13 @@ fn libssl(
         .optimize = optimize,
     });
 
-    const lib = b.addStaticLibrary(.{
+    const lib = b.addLibrary(.{
+        .linkage = .static,
         .name = "ssl",
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+        }),
     });
 
     lib.pie = true;
@@ -329,7 +333,7 @@ fn libssl(
     lib.addIncludePath(dep.path("include/internal"));
     lib.addIncludePath(dep.path("include/openssl"));
 
-    if (t.isDarwin() and t.cpu.arch.isAARCH64()) {
+    if (t.os.tag.isDarwin() and t.cpu.arch.isAARCH64()) {
         lib.addIncludePath(b.path("gen/macos-aarch64/include"));
         lib.addIncludePath(b.path("gen/macos-aarch64/include/openssl"));
         lib.installHeadersDirectory(b.path("gen/macos-aarch64/include/openssl"), "openssl", .{});
@@ -341,7 +345,7 @@ fn libssl(
         lib.installHeadersDirectory(b.path("gen/linux-aarch64/include/openssl"), "openssl", .{});
     }
 
-    if (t.isDarwin() and t.cpu.arch == .x86_64) {
+    if (t.os.tag.isDarwin() and t.cpu.arch == .x86_64) {
         lib.addIncludePath(b.path("gen/macos-x86_64/include"));
         lib.addIncludePath(b.path("gen/macos-x86_64/include/openssl"));
         lib.installHeadersDirectory(b.path("gen/macos-x86_64/include/openssl"), "openssl", .{});
@@ -353,8 +357,8 @@ fn libssl(
         lib.installHeadersDirectory(b.path("gen/linux-x86_64/include/openssl"), "openssl", .{});
     }
 
-    lib.defineCMacro("OPENSSLDIR", "\"\"");
-    lib.defineCMacro("ENGINESDIR", "\"\"");
+    lib.root_module.addCMacro("OPENSSLDIR", "\"\"");
+    lib.root_module.addCMacro("ENGINESDIR", "\"\"");
 
     lib.addCSourceFiles(.{
         .root = dep.path(""),
