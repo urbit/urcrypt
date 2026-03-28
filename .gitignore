@@ -25,17 +25,17 @@ autom4te.cache
 /aclocal.m4
 build-aux/compile
 /config.cache
-build-aux/config.guess
+build-aux/config.guess*
 /config.h.in
 /config.h.in~
 build-aux/config.log
 build-aux/config.status
-build-aux/config.sub
+build-aux/config.sub*
 /configure
 /configure~
 /configure.scan
 build-aux/depcomp
-build-aux/install-sh
+build-aux/install-sh*
 build-aux/missing
 /stamp-h1
 
@@ -57,3 +57,20 @@ build-aux/m4/lt~obsolete.m4
 # (which is called by configure script))
 Makefile
 
+# clangd
+compile_commands.json
+**/*.cache
+**/*.libs
+config.log
+
+# build artifacts
+**/*.o
+**/*.la
+**/*.lo
+
+# tests
+build-aux/test-driver
+test_runner
+test_runner.log
+test_runner.trs
+test-suite.log

@@ -35,7 +35,79 @@ libcrypto. Either build statically (pass `--disable-shared` to `./configure`)
 or provide a shared libcrypto for urcrypt to link against. It is the library
 user's responsibility to initialize openssl, set custom memory functions, etc.
 
+Dependencies
+------------
+Urcrypt requires the following libraries:
+
+- **OpenSSL (libcrypto)** - For cryptographic primitives
+- **libsecp256k1** - For secp256k1 elliptic curve operations (must have recovery and Schnorr signature support enabled)
+- **libaes_siv** - For AES-SIV authenticated encryption
+
+### macOS Installation
+
+Install the required tools and most dependencies via Homebrew:
+
+```bash
+# Install build tools
+brew install autoconf automake libtool autoconf-archive pkg-config
+
+# Install crypto libraries
+brew install openssl@3 secp256k1
+```
+
+**libaes_siv** is not available via Homebrew and must be built from source:
+
+```bash
+git clone https://github.com/dfoxfranke/libaes_siv.git
+cd libaes_siv
+mkdir build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+make
+sudo make install
+```
+
+### Linux Installation
+
+On Debian/Ubuntu:
+
+```bash
+sudo apt-get install autoconf automake libtool autoconf-archive pkg-config
+sudo apt-get install libssl-dev libsecp256k1-dev
+
+# libaes_siv must be built from source (same instructions as macOS)
+```
+
 Installation
 ------------
-Note that, in addition to standard `autotools` packages, `urcrypt` requires
-`autoconf-archive` in order to use a macro it provides.
+
+Once dependencies are installed:
+
+```bash
+./autogen.sh
+./configure
+make
+sudo make install
+```
+
+Building and Testing
+--------------------
+After installing dependencies, build the library:
+
+```bash
+./autogen.sh           # Generate configure script
+./configure            # Configure the build (add --disable-shared for static linking)
+make                   # Build the library
+```
+
+To run the test suite:
+
+```bash
+make check
+```
+
+To clean up build artifacts:
+
+```bash
+make clean             # Remove built files
+make distclean         # Remove all generated files (including configure artifacts)
+```

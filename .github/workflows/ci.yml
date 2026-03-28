@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libssl-dev \
+            libsecp256k1-dev \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config \
+            autoconf-archive \
+            cmake
+
+      - name: Build and install libaes_siv
+        run: |
+          git clone https://github.com/dfoxfranke/libaes_siv.git
+          cd libaes_siv
+          mkdir build && cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+          make
+          sudo make install
+          sudo ldconfig
+
+      - name: Generate build system
+        run: ./autogen.sh
+
+      - name: Configure (Ubuntu)
+        if: runner.os == 'Linux'
+        run: ./configure
+
+      - name: Build
+        run: make
+
+      - name: Run tests
+        run: make check
