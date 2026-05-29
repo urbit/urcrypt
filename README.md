@@ -27,13 +27,19 @@ urcrypt:
   * Some property of the routine is cryptographically useful (SHA, RIPE, etc)
   * The routine typically lives in a crypto library, for whatever reason.
 
-A word on OpenSSL
------------------
-Urcrypt depends on OpenSSL's libcrypto, which has global state. In order
-to avoid dealing with this state, urcrypt refuses to build with an internal
-libcrypto. Either build statically (pass `--disable-shared` to `./configure`)
-or provide a shared libcrypto for urcrypt to link against. It is the library
-user's responsibility to initialize openssl, set custom memory functions, etc.
+A word on dependencies
+----------------------
+Urcrypt depends on [GNU Nettle](https://www.lysator.liu.se/~nisse/nettle/)
+(libnettle) for its SHA, RIPEMD, and AES (ECB, CBC, and SIV) primitives.
+Unlike OpenSSL's libcrypto, Nettle keeps no global state, so there is no need
+to initialize the library, register custom memory functions, or arrange for a
+shared object — urcrypt may be built statically or shared without restriction.
+
+AES-SIV (RFC 5297) is provided by a vendored copy of
+[libaes_siv](https://github.com/dfoxfranke/libaes_siv) under `aes_siv/`, with
+its OpenSSL primitives retargeted onto Nettle's `cmac128`, `ctr`, and `aes`.
+It preserves the full RFC 5297 interface (256/384/512-bit keys and a vector of
+associated-data blocks) and passes the upstream RFC 5297 test vectors.
 
 Installation
 ------------

@@ -39,7 +39,7 @@ liburcrypt_la_CPPFLAGS = -I$(srcdir)/aes_siv \
 			 -I$(srcdir)/monocypher \
 			 -I$(srcdir)/keccak-tiny \
 			 -I$(srcdir)/scrypt
-liburcrypt_la_LIBADD = $(LIBCRYPTO_LIBS) \
+liburcrypt_la_LIBADD = $(NETTLE_LIBS) \
 		       $(LIBSECP256K1_LIBS) \
 		       libaes_siv.la \
 		       libed25519.la \
@@ -49,7 +49,7 @@ liburcrypt_la_LIBADD = $(LIBCRYPTO_LIBS) \
 		       libmonocypher.la \
 		       libkeccak_tiny.la \
 		       libscrypt.la
-liburcrypt_la_CFLAGS = $(LIBCRYPTO_CFLAGS) \
+liburcrypt_la_CFLAGS = $(NETTLE_CFLAGS) \
 		       $(LIBSECP256K1_CFLAGS)
 # urcrypt_ is used for public symbols, urcrypt__ for internal.
 liburcrypt_la_LDFLAGS = -export-symbols-regex '^urcrypt_[^_]' \
@@ -70,9 +70,9 @@ liburcrypt_la_SOURCES = urcrypt/aes_cbc.c \
 			urcrypt/util.c \
 			urcrypt/util.h
 
-# aes-siv (RFC 5297), vendored from https://github.com/dfoxfranke/libaes_siv
+# aes-siv (RFC 5297), retargeted from libaes_siv onto nettle
 libaes_siv_la_CPPFLAGS = -I$(srcdir)/aes_siv
-libaes_siv_la_CFLAGS = $(LIBCRYPTO_CFLAGS)
+libaes_siv_la_CFLAGS = $(NETTLE_CFLAGS)
 libaes_siv_la_SOURCES = aes_siv/aes_siv.c \
 			aes_siv/aes_siv.h
 

@@ -1,5 +1,9 @@
 /* Copyright (c) 2017-2019 Akamai Technologies, Inc.
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * Retargeted from OpenSSL's libcrypto onto GNU Nettle for urcrypt: the
+ * RFC 5297 S2V/CTR construction is unchanged; only the AES, CMAC and CTR
+ * primitives now come from Nettle (aes, cmac128, ctr) instead of EVP/CMAC.
  */
 
 #define _POSIX_C_SOURCE 200112L
@@ -21,9 +25,9 @@
 #endif
 #include <string.h>
 
-#include <openssl/cmac.h>
-#include <openssl/crypto.h>
-#include <openssl/evp.h>
+#include <nettle/aes.h>
+#include <nettle/cmac.h>
+#include <nettle/ctr.h>
 
 #ifdef ENABLE_CTGRIND
 #include <ctgrind.h>
@@ -65,6 +69,15 @@ static inline void ct_unpoison(const void *data, size_t len) {
         (void)len;
 }
 #endif
+
+/* Securely zero memory without being optimized away. Nettle provides no
+   equivalent of OPENSSL_cleanse(). */
+static void cleanse(void *p, size_t len) {
+        volatile unsigned char *v = (volatile unsigned char *)p;
+        while (len--) {
+                *v++ = 0;
+        }
+}
 
 static void debug(const char *label, const unsigned char *hex, size_t len) {
 /* ENABLE_CTGRIND has to override ENABLE_DEBUG_OUTPUT since sensitive data
@@ -203,146 +216,85 @@ static inline void dbl(block *block) {
         putword(block, 1, low);
 }
 
+/* AES key schedule for whichever variant is in use. The same union type backs
+   both the CMAC half and the CTR half of the SIV key. */
+union aes_ctx {
+        struct aes128_ctx a128;
+        struct aes192_ctx a192;
+        struct aes256_ctx a256;
+};
+
 struct AES_SIV_CTX_st {
         /* d stores intermediate results of S2V; it corresponds to D from the
            pseudocode in section 2.4 of RFC 5297. */
         block d;
-        EVP_CIPHER_CTX *cipher_ctx;
-        /* SIV_AES_Init() sets up cmac_ctx_init. cmac_ctx is a scratchpad used
-           by SIV_AES_AssociateData() and SIV_AES_(En|De)cryptFinal. */
-        CMAC_CTX *cmac_ctx_init, *cmac_ctx;
+        /* cmac_cipher and ctr_cipher hold the AES key schedules for the S2V
+           (CMAC) and CTR halves of the SIV key; encrypt is the matching Nettle
+           block-cipher function. cmac_key holds the CMAC subkeys derived from
+           cmac_cipher, and cmac_ctx is a scratchpad used by
+           AES_SIV_AssociateData() and AES_SIV_(En|De)cryptFinal. */
+        union aes_ctx cmac_cipher, ctr_cipher;
+        nettle_cipher_func *encrypt;
+        struct cmac128_key cmac_key;
+        struct cmac128_ctx cmac_ctx;
 };
 
 void AES_SIV_CTX_cleanup(AES_SIV_CTX *ctx) {
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-        EVP_CIPHER_CTX_reset(ctx->cipher_ctx);
-#else
-        EVP_CIPHER_CTX_cleanup(ctx->cipher_ctx);
-#endif
-
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L && OPENSSL_VERSION_NUMBER <= 0x10100060L
-	/* Workaround for an OpenSSL bug that causes a double free
-	   if you call CMAC_CTX_cleanup() before CMAC_CTX_free().
-	   https://github.com/openssl/openssl/pull/2798
-	*/
-	CMAC_CTX_free(ctx->cmac_ctx_init);
-	ctx->cmac_ctx_init = CMAC_CTX_new();
-	CMAC_CTX_free(ctx->cmac_ctx);
-	ctx->cmac_ctx = CMAC_CTX_new();
-#else
-        CMAC_CTX_cleanup(ctx->cmac_ctx_init);
-        CMAC_CTX_cleanup(ctx->cmac_ctx);
-#endif
-        OPENSSL_cleanse(&ctx->d, sizeof ctx->d);
+        cleanse(ctx, sizeof *ctx);
 }
 
 void AES_SIV_CTX_free(AES_SIV_CTX *ctx) {
         if (ctx) {
-                EVP_CIPHER_CTX_free(ctx->cipher_ctx);
-                /* Prior to OpenSSL 1.0.2b, CMAC_CTX_free() crashes on NULL */
-                if (LIKELY(ctx->cmac_ctx_init != NULL)) {
-                        CMAC_CTX_free(ctx->cmac_ctx_init);
-                }
-                if (LIKELY(ctx->cmac_ctx != NULL)) {
-                        CMAC_CTX_free(ctx->cmac_ctx);
-                }
-		OPENSSL_cleanse(&ctx->d, sizeof ctx->d);
-                OPENSSL_free(ctx);
+                cleanse(ctx, sizeof *ctx);
+                free(ctx);
         }
 }
 
 AES_SIV_CTX *AES_SIV_CTX_new(void) {
-        AES_SIV_CTX *ctx = OPENSSL_malloc(sizeof(struct AES_SIV_CTX_st));
-        if (UNLIKELY(ctx == NULL)) {
-                return NULL;
-        }
-
-        ctx->cipher_ctx = EVP_CIPHER_CTX_new();
-        ctx->cmac_ctx_init = CMAC_CTX_new();
-        ctx->cmac_ctx = CMAC_CTX_new();
-
-        if (UNLIKELY(ctx->cipher_ctx == NULL ||
-                     ctx->cmac_ctx_init == NULL ||
-                     ctx->cmac_ctx == NULL)) {
-                AES_SIV_CTX_free(ctx);
-                return NULL;
-        }
-
-        return ctx;
+        return malloc(sizeof(struct AES_SIV_CTX_st));
 }
 
 int AES_SIV_CTX_copy(AES_SIV_CTX *dst, AES_SIV_CTX const *src) {
-        memcpy(&dst->d, &src->d, sizeof src->d);
-        if(UNLIKELY(EVP_CIPHER_CTX_copy(dst->cipher_ctx, src->cipher_ctx)
-                    != 1)) {
-                return 0;
-        }
-        if (UNLIKELY(CMAC_CTX_copy(dst->cmac_ctx_init, src->cmac_ctx_init)
-                     != 1)) {
-                return 0;
-        }
-        /* Not necessary to copy cmac_ctx since it's just temporary
-         * storage */
+        /* The context is self-contained (no external pointers), so a flat copy
+           reproduces the key schedules, subkeys and S2V state. */
+        memcpy(dst, src, sizeof *dst);
         return 1;
 }
 
 int AES_SIV_Init(AES_SIV_CTX *ctx, unsigned char const *key, size_t key_len) {
         static const unsigned char zero[] = {0, 0, 0, 0, 0, 0, 0, 0,
                                              0, 0, 0, 0, 0, 0, 0, 0};
-        size_t out_len;
         int ret = 0;
 
         ct_poison(key, key_len);
 
         switch (key_len) {
         case 32:
-                if (UNLIKELY(CMAC_Init(ctx->cmac_ctx_init, key, 16,
-                                       EVP_aes_128_cbc(), NULL) != 1)) {
-                        goto done;
-                }
-                if (UNLIKELY(EVP_EncryptInit_ex(ctx->cipher_ctx,
-                                                EVP_aes_128_ctr(),
-                                                NULL, key + 16, NULL) != 1)) {
-                        goto done;
-                }
+                aes128_set_encrypt_key(&ctx->cmac_cipher.a128, key);
+                aes128_set_encrypt_key(&ctx->ctr_cipher.a128, key + 16);
+                ctx->encrypt = (nettle_cipher_func *)aes128_encrypt;
                 break;
         case 48:
-                if (UNLIKELY(CMAC_Init(ctx->cmac_ctx_init, key, 24,
-                                       EVP_aes_192_cbc(), NULL) != 1)) {
-                        goto done;
-                }
-                if (UNLIKELY(EVP_EncryptInit_ex(ctx->cipher_ctx,
-                                                EVP_aes_192_ctr(),
-                                                NULL, key + 24, NULL) != 1)) {
-                        goto done;
-                }
+                aes192_set_encrypt_key(&ctx->cmac_cipher.a192, key);
+                aes192_set_encrypt_key(&ctx->ctr_cipher.a192, key + 24);
+                ctx->encrypt = (nettle_cipher_func *)aes192_encrypt;
                 break;
         case 64:
-                if (UNLIKELY(CMAC_Init(ctx->cmac_ctx_init, key, 32,
-                                       EVP_aes_256_cbc(), NULL) != 1)) {
-                        goto done;
-                }
-                if (UNLIKELY(EVP_EncryptInit_ex(ctx->cipher_ctx,
-                                                EVP_aes_256_ctr(),
-                                                NULL, key + 32, NULL) != 1)) {
-                        goto done;
-                }
+                aes256_set_encrypt_key(&ctx->cmac_cipher.a256, key);
+                aes256_set_encrypt_key(&ctx->ctr_cipher.a256, key + 32);
+                ctx->encrypt = (nettle_cipher_func *)aes256_encrypt;
                 break;
         default:
                 goto done;
         }
 
-        if (UNLIKELY(CMAC_CTX_copy(ctx->cmac_ctx, ctx->cmac_ctx_init) != 1)) {
-                goto done;
-        }
-        if (UNLIKELY(CMAC_Update(ctx->cmac_ctx, zero, sizeof zero) != 1)) {
-                goto done;
-        }
-        out_len = sizeof ctx->d;
-        if (UNLIKELY(CMAC_Final(ctx->cmac_ctx, ctx->d.byte, &out_len) != 1)) {
-                goto done;
-        }
-        debug("CMAC(zero)", ctx->d.byte, out_len);
+        cmac128_set_key(&ctx->cmac_key, &ctx->cmac_cipher, ctx->encrypt);
+        cmac128_init(&ctx->cmac_ctx);
+        cmac128_update(&ctx->cmac_ctx, &ctx->cmac_cipher, ctx->encrypt,
+                       sizeof zero, zero);
+        cmac128_digest(&ctx->cmac_ctx, &ctx->cmac_key, &ctx->cmac_cipher,
+                       ctx->encrypt, ctx->d.byte);
+        debug("CMAC(zero)", ctx->d.byte, 16);
         ret = 1;
 
  done:
@@ -353,55 +305,41 @@ int AES_SIV_Init(AES_SIV_CTX *ctx, unsigned char const *key, size_t key_len) {
 int AES_SIV_AssociateData(AES_SIV_CTX *ctx, unsigned char const *data,
                           size_t len) {
         block cmac_out;
-        size_t out_len = sizeof cmac_out;
-        int ret = 0;
 
         ct_poison(data, len);
 
         dbl(&ctx->d);
         debug("double()", ctx->d.byte, 16);
 
-        if (UNLIKELY(CMAC_CTX_copy(ctx->cmac_ctx, ctx->cmac_ctx_init) != 1)) {
-                goto done;
-        }
-        if (UNLIKELY(CMAC_Update(ctx->cmac_ctx, data, len) != 1)) {
-                goto done;
-        }
-        if (UNLIKELY(CMAC_Final(ctx->cmac_ctx, cmac_out.byte, &out_len) != 1)) {
-                goto done;
-        }
-        assert(out_len == 16);
+        cmac128_init(&ctx->cmac_ctx);
+        cmac128_update(&ctx->cmac_ctx, &ctx->cmac_cipher, ctx->encrypt, len,
+                       data);
+        cmac128_digest(&ctx->cmac_ctx, &ctx->cmac_key, &ctx->cmac_cipher,
+                       ctx->encrypt, cmac_out.byte);
         debug("CMAC(ad)", cmac_out.byte, 16);
 
         xorblock(&ctx->d, &cmac_out);
         debug("xor", ctx->d.byte, 16);
-        ret = 1;
 
-done:
         ct_unpoison(data, len);
-        return ret;
+        return 1;
 }
 
 static inline int do_s2v_p(AES_SIV_CTX *ctx, block *out,
                            unsigned char const* in, size_t len) {
         block t;
-        size_t out_len = sizeof out->byte;
 
-        if (UNLIKELY(CMAC_CTX_copy(ctx->cmac_ctx, ctx->cmac_ctx_init) != 1)) {
-                return 0;
-        }
+        cmac128_init(&ctx->cmac_ctx);
 
         if(len >= 16) {
-                if(UNLIKELY(CMAC_Update(ctx->cmac_ctx, in, len - 16) != 1)) {
-                        return 0;
-                }
+                cmac128_update(&ctx->cmac_ctx, &ctx->cmac_cipher, ctx->encrypt,
+                               len - 16, in);
                 debug("xorend part 1", in, len - 16);
                 memcpy(&t, in + (len-16), 16);
                 xorblock(&t, &ctx->d);
                 debug("xorend part 2", t.byte, 16);
-                if(UNLIKELY(CMAC_Update(ctx->cmac_ctx, t.byte, 16) != 1)) {
-                        return 0;
-                }
+                cmac128_update(&ctx->cmac_ctx, &ctx->cmac_cipher, ctx->encrypt,
+                               16, t.byte);
         } else {
                 size_t i;
                 memcpy(&t, in, len);
@@ -413,50 +351,22 @@ static inline int do_s2v_p(AES_SIV_CTX *ctx, block *out,
                 dbl(&ctx->d);
                 xorblock(&t, &ctx->d);
                 debug("xor", t.byte, 16);
-                if(UNLIKELY(CMAC_Update(ctx->cmac_ctx, t.byte, 16) != 1)) {
-                        return 0;
-                }
+                cmac128_update(&ctx->cmac_ctx, &ctx->cmac_cipher, ctx->encrypt,
+                               16, t.byte);
         }
-        if(UNLIKELY(CMAC_Final(ctx->cmac_ctx, out->byte, &out_len) != 1)) {
-                return 0;
-        }
-        assert(out_len == 16);
+        cmac128_digest(&ctx->cmac_ctx, &ctx->cmac_key, &ctx->cmac_cipher,
+                       ctx->encrypt, out->byte);
         debug("CMAC(final)", out->byte, 16);
         return 1;
 }
 
-static inline int do_encrypt(EVP_CIPHER_CTX *ctx, unsigned char *out,
+static inline int do_encrypt(AES_SIV_CTX *ctx, unsigned char *out,
                              unsigned char const *in, size_t len, block *icv) {
-#ifdef ENABLE_DEBUG_TINY_CHUNK_SIZE
-        const int chunk_size = 7;
-#else
-        const int chunk_size = 1 << 30;
-#endif
-        size_t len_remaining = len;
-        int out_len;
-        int ret;
-
-        if(UNLIKELY(EVP_EncryptInit_ex(ctx, NULL, NULL, NULL, icv->byte)
-                    != 1)) {
-                return 0;
-        }
-
-        while(UNLIKELY(len_remaining > (size_t)chunk_size)) {
-                out_len = chunk_size;
-                if(UNLIKELY(EVP_EncryptUpdate(ctx, out, &out_len, in, out_len)
-                            != 1)) {
-                        return 0;
-                }
-                assert(out_len == chunk_size);
-                out += out_len;
-                in += out_len;
-                len_remaining -= (size_t)out_len;
-        }
-
-        out_len = (int)len_remaining;
-        ret = EVP_EncryptUpdate(ctx, out, &out_len, in, out_len);
-        assert(!ret || out_len == (int)len_remaining);
-        return ret;
+        /* Nettle's ctr_crypt() takes a size_t length and mutates the counter in
+           place, so the OpenSSL int-length chunking loop is unnecessary. icv is
+           the caller's scratch copy of the synthetic IV. */
+        ctr_crypt(&ctx->ctr_cipher, ctx->encrypt, 16, icv->byte, len, out, in);
+        return 1;
 }
 
 int AES_SIV_EncryptFinal(AES_SIV_CTX *ctx, unsigned char *v_out,
@@ -476,8 +386,7 @@ int AES_SIV_EncryptFinal(AES_SIV_CTX *ctx, unsigned char *v_out,
         q.byte[8] &= 0x7f;
         q.byte[12] &= 0x7f;
 
-        if(UNLIKELY(do_encrypt(ctx->cipher_ctx, c_out, plaintext, len, &q)
-                    != 1)) {
+        if(UNLIKELY(do_encrypt(ctx, c_out, plaintext, len, &q) != 1)) {
                 goto done;
         }
 
@@ -505,7 +414,7 @@ int AES_SIV_DecryptFinal(AES_SIV_CTX *ctx, unsigned char *out,
         q.byte[8] &= 0x7f;
         q.byte[12] &= 0x7f;
 
-        if(UNLIKELY(do_encrypt(ctx->cipher_ctx, out, c, len, &q) != 1)) {
+        if(UNLIKELY(do_encrypt(ctx, out, c, len, &q) != 1)) {
                 goto done;
         }
         debug("plaintext", out, len);
@@ -525,7 +434,7 @@ int AES_SIV_DecryptFinal(AES_SIV_CTX *ctx, unsigned char *out,
         if(ret) {
                 ct_unpoison(out, len);
         } else {
-                OPENSSL_cleanse(out, len);
+                cleanse(out, len);
         }
 
 done:

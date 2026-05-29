@@ -8,5 +8,5 @@ Description: cryptography library for urbit
 URL: https://github.com/urbit/urcrypt
 Version: @PACKAGE_VERSION@
 Cflags: -I${includedir}
-Requires.private: libcrypto libsecp256k1
+Requires.private: nettle libsecp256k1
 Libs: -L${libdir} -lurcrypt

@@ -66,27 +66,8 @@ AC_CHECK_HEADER([secp256k1_recovery.h], [],
 AC_CHECK_HEADER([secp256k1_schnorrsig.h], [],
                 [AC_MSG_ERROR([libsecp256k1 must have Schnorr signatures enabled.])])
 CPPFLAGS=$save_CPPFLAGS
-PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto])
-
-AS_IF([test "$enable_shared" == "yes"],
-  [# ensure crypto will be shared for shared object (see README.md)
-   save_LIBS=$LIBS
-   save_CFLAGS=$CFLAGS
-   LIBS="$LIBCRYPTO_LIBS $LIBS"
-   CFLAGS="$LIBCRYPTO_CFLAGS $CFLAGS"
-   AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <openssl/sha.h>],
-                                   [[unsigned char sha[32];
-                                     SHA256("hello", 5, sha);]])],
-     [AC_PROG_GREP
-      AC_CHECK_TOOL([NM], [nm])
-      AC_MSG_CHECKING([for shared libcrypto])
-      AS_IF(
-        [$NM conftest$EXEEXT | $GREP 'U .*SHA256' 2>&1 >/dev/null],
-        [AC_MSG_RESULT([yes])],
-        [AC_MSG_ERROR([cannot find shared object for libcrypto.])])],
-     [AC_MSG_ERROR([unable to link libcrypto.])])
-     LIBS=$save_LIBS
-     CFLAGS=$save_CFLAGS])
+# nettle >= 4.0 is required for the 2-argument *_digest() interface.
+PKG_CHECK_MODULES([NETTLE], [nettle >= 4.0])
 
 # Checks for header files.
 AC_CHECK_HEADERS([limits.h stddef.h stdint.h stdlib.h string.h])

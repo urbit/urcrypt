@@ -5,7 +5,6 @@
 #define _POSIX_C_SOURCE 200112L
 #define _ISOC99_SOURCE 1
 
-#include "config.h"
 #include "aes_siv.h"
 
 #undef NDEBUG
@@ -13,10 +12,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-
-#include <openssl/crypto.h>
-#include <openssl/evp.h>
-#include <openssl/opensslv.h>
 
 static void debug(const char *label, const unsigned char *hex, size_t len) {
         size_t i;
@@ -29,63 +24,6 @@ static void debug(const char *label, const unsigned char *hex, size_t len) {
                         printf(" ");
         }
         printf("\n");
-}
-
-static int fail_allocation_counter = -1;
-
-static void* mock_malloc(size_t num) {
-        if(fail_allocation_counter < 0) {
-                return malloc(num);
-        }
-        if(fail_allocation_counter-- == 0) {
-                return NULL;
-        }
-        return malloc(num);
-}
-
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-static void* mock_malloc_ex(size_t num, const char *file, int line) {
-	(void)file;
-	(void)line;
-	return mock_malloc(num);
-}
-
-static void *mock_realloc_ex(void *mem, size_t num, const char *file, int line) {
-	(void)file;
-	(void)line;
-	return realloc(mem, num);
-}
-
-static void mock_free_ex(void *mem, const char* file, int line) {
-	(void)file;
-	(void)line;
-	free(mem);
-}
-#endif
-
-/* This needs to be the first test case because CRYPTO_set_mem_functions()
-   will fail once any allocations have happened.
-*/
-static void test_malloc_failure(void) {
-        int ret, i=0;
-        AES_SIV_CTX *ctx;
-
-#if OPENSSL_VERSION_NUMBER < 0x10100000L	
-        ret = CRYPTO_set_mem_functions(mock_malloc, realloc, free);
-#else
-	ret = CRYPTO_set_mem_functions(mock_malloc_ex, mock_realloc_ex, mock_free_ex);
-#endif
-        assert(ret == 1);
-
-        printf("Test allocation failure cases:\n" );
-
-        do {
-                fail_allocation_counter = i++;
-        } while((ctx = AES_SIV_CTX_new()) == NULL);
-        assert(i > 1);
-        printf("AES_SIV_CTX_new() succeeds after %d successful allocations.\n", i-1);
-        AES_SIV_CTX_free(ctx);
-        fail_allocation_counter = -1;
 }
 
 static void test_cleanup_before_free(void) {
@@ -570,7 +508,6 @@ static void test_decrypt_failure(void) {
 }
 
 int main(void) {
-        test_malloc_failure();
 	test_cleanup_before_free();
         test_vector_1();
         test_vector_2();
