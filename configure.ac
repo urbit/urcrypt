@@ -88,12 +88,6 @@ AS_IF([test "$enable_shared" == "yes"],
      LIBS=$save_LIBS
      CFLAGS=$save_CFLAGS])
 
-# Checks for non pkg-config libraries
-AC_CHECK_LIB([aes_siv], [AES_SIV_CTX_new],
-             [AC_SUBST([LIBAES_SIV_LIBS], "-laes_siv")],
-             [AC_MSG_ERROR([libaes_siv is required.])],
-             [-lcrypto])
-
 # Checks for header files.
 AC_CHECK_HEADERS([limits.h stddef.h stdint.h stdlib.h string.h])
 

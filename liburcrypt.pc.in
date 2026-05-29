@@ -10,4 +10,3 @@ Version: @PACKAGE_VERSION@
 Cflags: -I${includedir}
 Requires.private: libcrypto libsecp256k1
 Libs: -L${libdir} -lurcrypt
-Libs.private: -laes_siv
