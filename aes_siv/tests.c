@@ -26,14 +26,12 @@ static void debug(const char *label, const unsigned char *hex, size_t len) {
         printf("\n");
 }
 
-static void test_cleanup_before_free(void) {
-	printf("Test cleanup before free: ");
-	AES_SIV_CTX *ctx = AES_SIV_CTX_new();
-	assert(ctx != NULL);
+static void test_cleanup(void) {
+	AES_SIV_CTX ctx[1];
+	printf("Test cleanup: ");
 	AES_SIV_CTX_cleanup(ctx);
-	AES_SIV_CTX_free(ctx);
 	printf("OK\n");
-}	
+}
 
 static void test_vector_1(void) {
         const unsigned char key[] = {
@@ -66,7 +64,7 @@ static void test_vector_1(void) {
         size_t plaintext_len = sizeof plaintext_out;
         size_t ciphertext_len = sizeof ciphertext_out;
 
-        AES_SIV_CTX *ctx;
+        AES_SIV_CTX ctx[1];
         int ret;
 
         printf("Test vector 1:\n");
@@ -74,9 +72,6 @@ static void test_vector_1(void) {
         debug("AD", ad, sizeof ad);
         debug("plaintext", plaintext, sizeof plaintext);
         debug("exp. ciphertext", ciphertext, sizeof ciphertext);
-
-        ctx = AES_SIV_CTX_new();
-        assert(ctx != NULL);
 
         printf("Encryption:\n");
         ret = AES_SIV_Encrypt(ctx, ciphertext_out, &ciphertext_len, key,
@@ -93,7 +88,7 @@ static void test_vector_1(void) {
         assert(ret == 1);
         assert(plaintext_len == sizeof plaintext);
         assert(!memcmp(plaintext, plaintext_out, plaintext_len));
-        AES_SIV_CTX_free(ctx);
+        AES_SIV_CTX_cleanup(ctx);
 }
 
 static void test_vector_2(void) {
@@ -145,7 +140,7 @@ static void test_vector_2(void) {
         unsigned char ciphertext_out[256];
         unsigned char plaintext_out[256];
 
-        AES_SIV_CTX *ctx;
+        AES_SIV_CTX ctx[1];
         int ret;
 
         printf("Test vector 2:\n");
@@ -155,9 +150,6 @@ static void test_vector_2(void) {
         debug("nonce", nonce, sizeof nonce);
         debug("plaintext", plaintext, sizeof plaintext);
         debug("exp. ciphertext", ciphertext, sizeof ciphertext);
-
-        ctx = AES_SIV_CTX_new();
-        assert(ctx != NULL);
 
         printf("Encryption:\n");
         ret = AES_SIV_Init(ctx, key, sizeof key);
@@ -188,7 +180,7 @@ static void test_vector_2(void) {
         assert(ret == 1);
         debug("plaintext", plaintext_out, sizeof plaintext);
         assert(!memcmp(plaintext_out, plaintext, sizeof plaintext));
-        AES_SIV_CTX_free(ctx);
+        AES_SIV_CTX_cleanup(ctx);
 }
 
 static void test_384bit(void) {
@@ -225,7 +217,7 @@ static void test_384bit(void) {
         size_t plaintext_len = sizeof plaintext_out;
         size_t ciphertext_len = sizeof ciphertext_out;
 
-        AES_SIV_CTX *ctx;
+        AES_SIV_CTX ctx[1];
         int ret;
 
         printf("384-bit key test:\n");
@@ -233,9 +225,6 @@ static void test_384bit(void) {
         debug("AD", ad, sizeof ad);
         debug("plaintext", plaintext, sizeof plaintext);
         debug("exp. ciphertext", ciphertext, sizeof ciphertext);
-
-        ctx = AES_SIV_CTX_new();
-        assert(ctx != NULL);
 
         printf("Encryption:\n");
         ret = AES_SIV_Encrypt(ctx, ciphertext_out, &ciphertext_len, key,
@@ -252,7 +241,7 @@ static void test_384bit(void) {
         assert(ret == 1);
         assert(plaintext_len == sizeof plaintext);
         assert(!memcmp(plaintext, plaintext_out, plaintext_len));
-        AES_SIV_CTX_free(ctx);
+        AES_SIV_CTX_cleanup(ctx);
 }
 
 static void test_512bit(void) {
@@ -291,7 +280,7 @@ static void test_512bit(void) {
         size_t plaintext_len = sizeof plaintext_out;
         size_t ciphertext_len = sizeof ciphertext_out;
 
-        AES_SIV_CTX *ctx;
+        AES_SIV_CTX ctx[1];
         int ret;
 
         printf("512-bit key test:\n");
@@ -299,9 +288,6 @@ static void test_512bit(void) {
         debug("AD", ad, sizeof ad);
         debug("plaintext", plaintext, sizeof plaintext);
         debug("exp. ciphertext", ciphertext, sizeof ciphertext);
-
-        ctx = AES_SIV_CTX_new();
-        assert(ctx != NULL);
 
         printf("Encryption:\n");
         ret = AES_SIV_Encrypt(ctx, ciphertext_out, &ciphertext_len, key,
@@ -318,7 +304,7 @@ static void test_512bit(void) {
         assert(ret == 1);
         assert(plaintext_len == sizeof plaintext);
         assert(!memcmp(plaintext, plaintext_out, plaintext_len));
-        AES_SIV_CTX_free(ctx);
+        AES_SIV_CTX_cleanup(ctx);
 }
 
 static void test_highlevel_with_nonce(void) {
@@ -351,7 +337,7 @@ static void test_highlevel_with_nonce(void) {
         size_t plaintext_len = sizeof plaintext_out;
         size_t ciphertext_len = sizeof ciphertext_out;
 
-        AES_SIV_CTX *ctx;
+        AES_SIV_CTX ctx[1];
         int ret;
 
         printf("Test high-level interface with non-NULL nonce:\n");
@@ -359,9 +345,6 @@ static void test_highlevel_with_nonce(void) {
         debug("AD", ad, sizeof ad);
         debug("nonce", nonce, sizeof nonce);
         debug("plaintext", plaintext, sizeof plaintext);
-
-        ctx = AES_SIV_CTX_new();
-        assert(ctx != NULL);
 
         printf("Encryption:\n");
         ret = AES_SIV_Encrypt(ctx, ciphertext_out, &ciphertext_len, key,
@@ -376,7 +359,7 @@ static void test_highlevel_with_nonce(void) {
         assert(ret == 1);
         assert(plaintext_len == sizeof plaintext);
         assert(!memcmp(plaintext, plaintext_out, plaintext_len));
-        AES_SIV_CTX_free(ctx);
+        AES_SIV_CTX_cleanup(ctx);
 }
 
 static void test_copy(void) {
@@ -412,15 +395,8 @@ static void test_copy(void) {
 
         unsigned char ciphertext1_out[256], ciphertext2_out[256];
 
-        AES_SIV_CTX *ctx1, *ctx2, *ctx3;
+        AES_SIV_CTX ctx1[1], ctx2[1], ctx3[1];
         int ret;
-
-        ctx1 = AES_SIV_CTX_new();
-        assert(ctx1 != NULL);
-        ctx2 = AES_SIV_CTX_new();
-        assert(ctx2 != NULL);
-        ctx3 = AES_SIV_CTX_new();
-        assert(ctx3 != NULL);
 
         ret = AES_SIV_Init(ctx1, key, sizeof key);
         assert(ret == 1);
@@ -450,9 +426,9 @@ static void test_copy(void) {
         assert(ret == 1);
         assert(memcmp(ciphertext, ciphertext2_out, sizeof ciphertext));
 
-        AES_SIV_CTX_free(ctx1);
-        AES_SIV_CTX_free(ctx2);
-        AES_SIV_CTX_free(ctx3);
+        AES_SIV_CTX_cleanup(ctx1);
+        AES_SIV_CTX_cleanup(ctx2);
+        AES_SIV_CTX_cleanup(ctx3);
 }
 
 static void test_bad_key(void) {
@@ -463,13 +439,10 @@ static void test_bad_key(void) {
         unsigned char ciphertext_out[256];
         size_t ciphertext_len = sizeof ciphertext_out;
 
-        AES_SIV_CTX *ctx;
+        AES_SIV_CTX ctx[1];
         int ret;
 
         printf("Test bad key size: ");
-
-        ctx = AES_SIV_CTX_new();
-        assert(ctx != NULL);
 
         ret = AES_SIV_Encrypt(ctx, ciphertext_out, &ciphertext_len, key,
                               sizeof key, NULL, 0, plaintext, sizeof plaintext,
@@ -479,7 +452,7 @@ static void test_bad_key(void) {
         ret = AES_SIV_Init(ctx, key, sizeof key);
         assert(ret == 0);
 
-        AES_SIV_CTX_free(ctx);
+        AES_SIV_CTX_cleanup(ctx);
         printf("OK\n");
 }
 
@@ -491,24 +464,21 @@ static void test_decrypt_failure(void) {
         unsigned char plaintext_out[256];
         size_t plaintext_len = sizeof plaintext_out;
 
-        AES_SIV_CTX *ctx;
+        AES_SIV_CTX ctx[1];
         int ret;
 
         printf("Test decryption failure:\n");
-
-        ctx = AES_SIV_CTX_new();
-        assert(ctx != NULL);
 
         ret = AES_SIV_Decrypt(ctx, plaintext_out, &plaintext_len, key,
                               sizeof key, NULL, 0, ciphertext,
                               sizeof ciphertext, ad, sizeof ad);
         assert(ret == 0);
 
-        AES_SIV_CTX_free(ctx);
+        AES_SIV_CTX_cleanup(ctx);
 }
 
 int main(void) {
-	test_cleanup_before_free();
+	test_cleanup();
         test_vector_1();
         test_vector_2();
         test_384bit();

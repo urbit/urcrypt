@@ -103,11 +103,6 @@ static void debug(const char *label, const unsigned char *hex, size_t len) {
 #endif
 }
 
-typedef union block_un {
-        uint64_t word[2];
-        unsigned char byte[16];
-} block;
-
 const union {
         uint64_t word;
         char byte[8];
@@ -216,42 +211,8 @@ static inline void dbl(block *block) {
         putword(block, 1, low);
 }
 
-/* AES key schedule for whichever variant is in use. The same union type backs
-   both the CMAC half and the CTR half of the SIV key. */
-union aes_ctx {
-        struct aes128_ctx a128;
-        struct aes192_ctx a192;
-        struct aes256_ctx a256;
-};
-
-struct AES_SIV_CTX_st {
-        /* d stores intermediate results of S2V; it corresponds to D from the
-           pseudocode in section 2.4 of RFC 5297. */
-        block d;
-        /* cmac_cipher and ctr_cipher hold the AES key schedules for the S2V
-           (CMAC) and CTR halves of the SIV key; encrypt is the matching Nettle
-           block-cipher function. cmac_key holds the CMAC subkeys derived from
-           cmac_cipher, and cmac_ctx is a scratchpad used by
-           AES_SIV_AssociateData() and AES_SIV_(En|De)cryptFinal. */
-        union aes_ctx cmac_cipher, ctr_cipher;
-        nettle_cipher_func *encrypt;
-        struct cmac128_key cmac_key;
-        struct cmac128_ctx cmac_ctx;
-};
-
 void AES_SIV_CTX_cleanup(AES_SIV_CTX *ctx) {
         cleanse(ctx, sizeof *ctx);
-}
-
-void AES_SIV_CTX_free(AES_SIV_CTX *ctx) {
-        if (ctx) {
-                cleanse(ctx, sizeof *ctx);
-                free(ctx);
-        }
-}
-
-AES_SIV_CTX *AES_SIV_CTX_new(void) {
-        return malloc(sizeof(struct AES_SIV_CTX_st));
 }
 
 int AES_SIV_CTX_copy(AES_SIV_CTX *dst, AES_SIV_CTX const *src) {
