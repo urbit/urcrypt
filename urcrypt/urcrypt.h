@@ -111,6 +111,34 @@ int urcrypt_aes_cbcc_de(uint8_t **message_ptr,
                         uint8_t ivec[16],
                         urcrypt_realloc_t realloc_ptr);
 
+// unsafe cbc: operate in place on a buffer that is already padded to a
+// multiple of 16 bytes. no realloc callback is taken; the caller owns the
+// padding. returns -1 if length is not a multiple of 16, else 0.
+int urcrypt_aes_cbca_en_unsafe(uint8_t *message,
+                               size_t length,
+                               uint8_t key[16],
+                               uint8_t ivec[16]);
+int urcrypt_aes_cbca_de_unsafe(uint8_t *message,
+                               size_t length,
+                               uint8_t key[16],
+                               uint8_t ivec[16]);
+int urcrypt_aes_cbcb_en_unsafe(uint8_t *message,
+                               size_t length,
+                               uint8_t key[24],
+                               uint8_t ivec[16]);
+int urcrypt_aes_cbcb_de_unsafe(uint8_t *message,
+                               size_t length,
+                               uint8_t key[24],
+                               uint8_t ivec[16]);
+int urcrypt_aes_cbcc_en_unsafe(uint8_t *message,
+                               size_t length,
+                               uint8_t key[32],
+                               uint8_t ivec[16]);
+int urcrypt_aes_cbcc_de_unsafe(uint8_t *message,
+                               size_t length,
+                               uint8_t key[32],
+                               uint8_t ivec[16]);
+
 typedef struct {
   size_t length;
   uint8_t *bytes;
