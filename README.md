@@ -72,9 +72,9 @@ sudo apt-get install autoconf automake libtool autoconf-archive pkg-config m4 bu
 ### Building Nettle 4.0 from source
 
 ```bash
-git clone --branch nettle_4.0_release_20260205 https://github.com/gnutls/nettle.git
-cd nettle
-./.bootstrap   # the git mirror ships no configure; this runs autoconf
+curl -fsSLO https://ftp.gnu.org/gnu/nettle/nettle-4.0.tar.gz
+tar xzf nettle-4.0.tar.gz
+cd nettle-4.0
 # --enable-mini-gmp avoids a libgmp dependency; urcrypt only links libnettle.
 ./configure --prefix="$HOME/.local/nettle4" --enable-mini-gmp --disable-documentation
 make

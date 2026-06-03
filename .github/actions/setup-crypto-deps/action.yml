@@ -9,8 +9,11 @@ inputs:
   prefix:
     description: 'Install prefix for the built dependencies.'
     required: true
-  nettle-ref:
-    description: 'GNU Nettle git tag to build from the gnutls/nettle mirror (e.g. nettle_4.0_release_20260205).'
+  nettle-version:
+    description: 'GNU Nettle release to build from the ftp.gnu.org tarball (e.g. 4.0).'
+    required: true
+  nettle-sha256:
+    description: 'Expected sha256 of nettle-<version>.tar.gz, verified before use.'
     required: true
   secp256k1-ref:
     description: 'libsecp256k1 git tag/ref to build (e.g. v0.7.1).'
@@ -27,20 +30,26 @@ runs:
       uses: actions/cache@v4
       with:
         path: ${{ inputs.prefix }}
-        key: cryptodeps-${{ runner.os }}-${{ runner.arch }}-nettle${{ inputs.nettle-ref }}-secp${{ inputs.secp256k1-ref }}-v2
+        key: cryptodeps-${{ runner.os }}-${{ runner.arch }}-nettle${{ inputs.nettle-version }}-secp${{ inputs.secp256k1-ref }}-v3
 
-    - name: Build GNU Nettle ${{ inputs.nettle-ref }}
+    - name: Build GNU Nettle ${{ inputs.nettle-version }}
       if: steps.cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
         set -euo pipefail
         # nettle >= 4.0 introduced the 2-argument *_digest() interface urcrypt uses.
+        # Use the signed GNU release tarball (canonical, ships a generated
+        # configure) and verify its sha256 before building.
         cd "$RUNNER_TEMP"
-        git clone --depth 1 --branch "${{ inputs.nettle-ref }}" \
-          https://github.com/gnutls/nettle.git
-        cd nettle
-        # The git mirror ships no generated configure; .bootstrap runs autoconf.
-        ./.bootstrap
+        tarball="nettle-${{ inputs.nettle-version }}.tar.gz"
+        curl -fsSLO "https://ftp.gnu.org/gnu/nettle/${tarball}"
+        if command -v sha256sum >/dev/null 2>&1; then
+          echo "${{ inputs.nettle-sha256 }}  ${tarball}" | sha256sum -c -
+        else
+          echo "${{ inputs.nettle-sha256 }}  ${tarball}" | shasum -a 256 -c -
+        fi
+        tar xzf "${tarball}"
+        cd "nettle-${{ inputs.nettle-version }}"
         # On Linux build static libraries (urcrypt links them statically, the
         # way urbit/vere consumes it); -fPIC so they still link into PIE binaries.
         # macOS can't fully static-link, so build shared there.

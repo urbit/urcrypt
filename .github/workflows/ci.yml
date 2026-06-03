@@ -15,7 +15,8 @@ env:
   # urcrypt requires nettle >= 4.0 (2-argument *_digest() interface) and a
   # libsecp256k1 built with the recovery + Schnorr modules. Neither is available
   # from the runners' package managers, so both are built from source (cached).
-  NETTLE_REF: "nettle_4.0_release_20260205"
+  NETTLE_VERSION: "4.0"
+  NETTLE_SHA256: "3addbc00da01846b232fb3bc453538ea5468da43033f21bb345cb1e9073f5094"
   SECP256K1_REF: "v0.7.1"
 
 jobs:
@@ -45,7 +46,8 @@ jobs:
         uses: ./.github/actions/setup-crypto-deps
         with:
           prefix: ${{ github.workspace }}/.deps
-          nettle-ref: ${{ env.NETTLE_REF }}
+          nettle-version: ${{ env.NETTLE_VERSION }}
+          nettle-sha256: ${{ env.NETTLE_SHA256 }}
           secp256k1-ref: ${{ env.SECP256K1_REF }}
 
       - name: Build
@@ -90,7 +92,8 @@ jobs:
         uses: ./.github/actions/setup-crypto-deps
         with:
           prefix: ${{ github.workspace }}/.deps
-          nettle-ref: ${{ env.NETTLE_REF }}
+          nettle-version: ${{ env.NETTLE_VERSION }}
+          nettle-sha256: ${{ env.NETTLE_SHA256 }}
           secp256k1-ref: ${{ env.SECP256K1_REF }}
 
       # Built with clang so UBSan can be scoped to urcrypt's own code via an
