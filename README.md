@@ -46,32 +46,55 @@ Dependencies
 Urcrypt requires the following libraries:
 
 - **GNU Nettle (>= 4.0)** - For SHA, RIPEMD, and AES (ECB, CBC) primitives.
+  urcrypt uses Nettle 4.0's 2-argument `*_digest()` interface, so 3.x will not
+  compile. Homebrew and the distributions still ship 3.x, so Nettle must be
+  built from source (see below).
 - **libsecp256k1** - For secp256k1 elliptic curve operations. It **must** be
   built with the recovery and Schnorr signature modules enabled (i.e. provide
   `secp256k1_recovery.h` and `secp256k1_schnorrsig.h`); `configure` errors out
   otherwise. Most distribution packages omit these modules, so building from
-  source is usually required (see below).
+  source is usually required (see below). Homebrew's `secp256k1` does include
+  them, so on macOS `brew install secp256k1` is enough.
 
 AES-SIV is supplied by the vendored `aes_siv/` copy and needs no external
 package.
 
-### macOS Installation
-
-Install the build tools and Nettle via Homebrew:
+### Build tools
 
 ```bash
-brew install autoconf automake libtool autoconf-archive pkg-config nettle
+# macOS (Homebrew)
+brew install autoconf automake libtool autoconf-archive pkg-config
+
+# Debian/Ubuntu
+sudo apt-get install autoconf automake libtool autoconf-archive pkg-config m4 build-essential
 ```
 
-### Linux Installation
-
-On Debian/Ubuntu:
+### Building Nettle 4.0 from source
 
 ```bash
-sudo apt-get install autoconf automake libtool autoconf-archive pkg-config nettle-dev
+git clone --branch nettle_4.0_release_20260205 https://github.com/gnutls/nettle.git
+cd nettle
+./.bootstrap   # the git mirror ships no configure; this runs autoconf
+# --enable-mini-gmp avoids a libgmp dependency; urcrypt only links libnettle.
+./configure --prefix="$HOME/.local/nettle4" --enable-mini-gmp --disable-documentation
+make
+make install
+```
+
+Then point urcrypt's `configure` at it (this also sidesteps an older Homebrew
+Nettle):
+
+```bash
+export NETTLE_CFLAGS="-I$HOME/.local/nettle4/include"
+export NETTLE_LIBS="-L$HOME/.local/nettle4/lib -lnettle"
+# so the test runner finds libnettle at run time:
+export DYLD_LIBRARY_PATH="$HOME/.local/nettle4/lib:$DYLD_LIBRARY_PATH"   # macOS
+export LD_LIBRARY_PATH="$HOME/.local/nettle4/lib:$LD_LIBRARY_PATH"       # Linux
 ```
 
 ### Building libsecp256k1 with the required modules
+
+On macOS `brew install secp256k1` already provides the modules. Otherwise:
 
 ```bash
 git clone https://github.com/bitcoin-core/secp256k1.git
@@ -85,13 +108,20 @@ sudo make install   # then `sudo ldconfig` on Linux
 Installation
 ------------
 
-Once dependencies are installed:
+Once dependencies are installed (with the `NETTLE_*` variables exported as
+above):
 
 ```bash
 ./autogen.sh
 ./configure
 make
 sudo make install
+```
+
+### Running the tests
+
+```bash
+make check   # builds and runs the test_runner suite
 ```
 
 Building and Testing

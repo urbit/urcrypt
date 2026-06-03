@@ -9,8 +9,8 @@ inputs:
   prefix:
     description: 'Install prefix for the built dependencies.'
     required: true
-  nettle-version:
-    description: 'GNU Nettle release to build (e.g. 4.0). Released via ftp.gnu.org.'
+  nettle-ref:
+    description: 'GNU Nettle git tag to build from the gnutls/nettle mirror (e.g. nettle_4.0_release_20260205).'
     required: true
   secp256k1-ref:
     description: 'libsecp256k1 git tag/ref to build (e.g. v0.7.1).'
@@ -27,21 +27,32 @@ runs:
       uses: actions/cache@v4
       with:
         path: ${{ inputs.prefix }}
-        key: cryptodeps-${{ runner.os }}-${{ runner.arch }}-nettle${{ inputs.nettle-version }}-secp${{ inputs.secp256k1-ref }}-v1
+        key: cryptodeps-${{ runner.os }}-${{ runner.arch }}-nettle${{ inputs.nettle-ref }}-secp${{ inputs.secp256k1-ref }}-v2
 
-    - name: Build GNU Nettle ${{ inputs.nettle-version }}
+    - name: Build GNU Nettle ${{ inputs.nettle-ref }}
       if: steps.cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
         set -euo pipefail
         # nettle >= 4.0 introduced the 2-argument *_digest() interface urcrypt uses.
         cd "$RUNNER_TEMP"
-        curl -fsSLO "https://ftp.gnu.org/gnu/nettle/nettle-${{ inputs.nettle-version }}.tar.gz"
-        tar xzf "nettle-${{ inputs.nettle-version }}.tar.gz"
-        cd "nettle-${{ inputs.nettle-version }}"
+        git clone --depth 1 --branch "${{ inputs.nettle-ref }}" \
+          https://github.com/gnutls/nettle.git
+        cd nettle
+        # The git mirror ships no generated configure; .bootstrap runs autoconf.
+        ./.bootstrap
+        # On Linux build static libraries (urcrypt links them statically, the
+        # way urbit/vere consumes it); -fPIC so they still link into PIE binaries.
+        # macOS can't fully static-link, so build shared there.
+        if [ "$RUNNER_OS" = "Linux" ]; then
+          LINKAGE="--enable-static --disable-shared"
+          export CFLAGS="${CFLAGS:-} -fPIC"
+        else
+          LINKAGE="--disable-static"
+        fi
         # --enable-mini-gmp avoids needing libgmp; urcrypt only links libnettle.
         ./configure --prefix="${{ inputs.prefix }}" --enable-mini-gmp \
-          --disable-static --disable-documentation
+          --disable-documentation $LINKAGE
         make -j"$(getconf _NPROCESSORS_ONLN)"
         make install
 
@@ -55,9 +66,15 @@ runs:
           https://github.com/bitcoin-core/secp256k1.git
         cd secp256k1
         ./autogen.sh
+        # Static (with PIC) on Linux to match the static urcrypt link; shared on macOS.
+        if [ "$RUNNER_OS" = "Linux" ]; then
+          LINKAGE="--enable-static --disable-shared --with-pic"
+        else
+          LINKAGE="--disable-static"
+        fi
         ./configure --prefix="${{ inputs.prefix }}" \
           --enable-module-recovery --enable-module-schnorrsig --enable-module-ecdh \
-          --disable-static --disable-benchmark --disable-tests --disable-exhaustive-tests
+          --disable-benchmark --disable-tests --disable-exhaustive-tests $LINKAGE
         make -j"$(getconf _NPROCESSORS_ONLN)"
         make install
 
@@ -75,9 +92,8 @@ runs:
           echo "LIBSECP256K1_LIBS=-L${prefix}/lib -lsecp256k1"
           echo "PKG_CONFIG_PATH=${prefix}/lib/pkgconfig"
         } >> "$GITHUB_ENV"
-        # Runtime loader path so the test runner finds the shared libraries.
+        # On macOS the deps are shared, so the test runner needs the loader path.
+        # On Linux they are linked statically, so no runtime path is required.
         if [ "$RUNNER_OS" = "macOS" ]; then
           echo "DYLD_LIBRARY_PATH=${prefix}/lib" >> "$GITHUB_ENV"
-        else
-          echo "LD_LIBRARY_PATH=${prefix}/lib" >> "$GITHUB_ENV"
         fi
