@@ -1,0 +1,18 @@
+# UndefinedBehaviorSanitizer ignore list for the CI sanitizer job.
+#
+# The vendored third-party crypto implementations contain benign-but-technically
+# undefined constructs (e.g. left shifts of negative values in the ed25519
+# reference field arithmetic). They are exercised through their own published
+# test vectors by the test suite. We skip UBSan instrumentation for them so the
+# sanitizer job stays focused on urcrypt's own code (urcrypt/ and aes_siv/).
+#
+# This excludes UBSan only (the [undefined] section); AddressSanitizer still
+# instruments everything, including the vendored code.
+[undefined]
+src:*ed25519/src/*
+src:*ge-additions/*
+src:*argon2/*
+src:*blake3/*
+src:*keccak-tiny/*
+src:*monocypher/*
+src:*scrypt/*

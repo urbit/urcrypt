@@ -78,7 +78,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            autoconf automake libtool pkg-config autoconf-archive m4 build-essential
+            autoconf automake libtool pkg-config autoconf-archive m4 build-essential clang
 
       - name: Set up crypto dependencies
         uses: ./.github/actions/setup-crypto-deps
@@ -87,6 +87,9 @@ jobs:
           nettle-version: ${{ env.NETTLE_VERSION }}
           secp256k1-ref: ${{ env.SECP256K1_REF }}
 
+      # Built with clang so UBSan can be scoped to urcrypt's own code via an
+      # ignore list (an -fsanitize-ignorelist= feature gcc lacks). ASan still
+      # covers everything, including the vendored libraries.
       - name: Build & test with sanitizers
         env:
           # Leak detection is off: the one-shot test runner intentionally does
@@ -95,8 +98,8 @@ jobs:
           UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
         run: |
           ./autogen.sh
-          ./configure \
-            CFLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -g -O1" \
+          ./configure CC=clang \
+            CFLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -fsanitize-ignorelist=${{ github.workspace }}/ci/sanitizer-ignorelist.txt -g -O1" \
             LDFLAGS="-fsanitize=address,undefined"
           make -j"$(getconf _NPROCESSORS_ONLN)"
           make check
