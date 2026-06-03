@@ -95,7 +95,12 @@ void ge_cached_neg(ge_cached* r, const ge_cached* t)
 void select_cached(ge_cached* c, const ge_cached Ai[8], int32_t b)
 {
   int32_t is_negative = negative(b);
-  int32_t b_abs = b - (((-is_negative) & b) << 1);
+  int32_t b_abs;
+  {
+    uint32_t bits_of_b_or_zero = (uint32_t)((-is_negative) & b);
+    int32_t  two_b_or_zero = (int32_t)(bits_of_b_or_zero << 1);
+    b_abs = b - two_b_or_zero;
+  }
 
   ge_cached_0(c);
   for (int32_t i = 0; i < 8; ++i) {

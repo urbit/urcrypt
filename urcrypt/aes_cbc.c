@@ -1,7 +1,8 @@
 #include "urcrypt.h"
 #include "util.h"
 #include <string.h>
-#include <openssl/aes.h>
+#include <nettle/aes.h>
+#include <nettle/cbc.h>
 
 static int
 urcrypt__cbc_pad(uint8_t **message_ptr,
@@ -41,7 +42,8 @@ urcrypt__cbc_pad(uint8_t **message_ptr,
 static int
 urcrypt__cbc_help(uint8_t **message_ptr,
                   size_t *length_ptr,
-                  const AES_KEY *key,
+                  const void *ctx,
+                  nettle_cipher_func *f,
                   uint8_t ivec[16],
                   const int enc,
                   urcrypt_realloc_t realloc_ptr)
@@ -54,7 +56,12 @@ urcrypt__cbc_help(uint8_t **message_ptr,
     size_t length = *length_ptr;
     urcrypt__reverse(16, ivec);
     urcrypt__reverse(length, out);
-    AES_cbc_encrypt(out, out, length, key, ivec, enc);
+    if ( enc ) {
+      cbc_encrypt(ctx, f, 16, ivec, length, out, out);
+    }
+    else {
+      cbc_decrypt(ctx, f, 16, ivec, length, out, out);
+    }
     urcrypt__reverse(length, out);
     return 0;
   }
@@ -67,17 +74,12 @@ urcrypt_aes_cbca_en(uint8_t **message_ptr,
                     uint8_t ivec[16],
                     urcrypt_realloc_t realloc_ptr)
 {
-  AES_KEY aes_key;
+  struct aes128_ctx ctx;
 
   urcrypt__reverse(16, key);
-
-  if ( 0 != AES_set_encrypt_key(key, 128, &aes_key) ) {
-    return -1;
-  }
-  else {
-    return urcrypt__cbc_help(message_ptr, length_ptr,
-        &aes_key, ivec, AES_ENCRYPT, realloc_ptr);
-  }
+  aes128_set_encrypt_key(&ctx, key);
+  return urcrypt__cbc_help(message_ptr, length_ptr, &ctx,
+      (nettle_cipher_func *)aes128_encrypt, ivec, 1, realloc_ptr);
 }
 
 int
@@ -87,17 +89,12 @@ urcrypt_aes_cbca_de(uint8_t **message_ptr,
                     uint8_t ivec[16],
                     urcrypt_realloc_t realloc_ptr)
 {
-  AES_KEY aes_key;
+  struct aes128_ctx ctx;
 
   urcrypt__reverse(16, key);
-
-  if ( 0 != AES_set_decrypt_key(key, 128, &aes_key) ) {
-    return -1;
-  }
-  else {
-    return urcrypt__cbc_help(message_ptr, length_ptr,
-        &aes_key, ivec, AES_DECRYPT, realloc_ptr);
-  }
+  aes128_set_decrypt_key(&ctx, key);
+  return urcrypt__cbc_help(message_ptr, length_ptr, &ctx,
+      (nettle_cipher_func *)aes128_decrypt, ivec, 0, realloc_ptr);
 }
 
 int
@@ -107,17 +104,12 @@ urcrypt_aes_cbcb_en(uint8_t **message_ptr,
                     uint8_t ivec[16],
                     urcrypt_realloc_t realloc_ptr)
 {
-  AES_KEY aes_key;
+  struct aes192_ctx ctx;
 
   urcrypt__reverse(24, key);
-
-  if ( 0 != AES_set_encrypt_key(key, 192, &aes_key) ) {
-    return -1;
-  }
-  else {
-    return urcrypt__cbc_help(message_ptr, length_ptr,
-        &aes_key, ivec, AES_ENCRYPT, realloc_ptr);
-  }
+  aes192_set_encrypt_key(&ctx, key);
+  return urcrypt__cbc_help(message_ptr, length_ptr, &ctx,
+      (nettle_cipher_func *)aes192_encrypt, ivec, 1, realloc_ptr);
 }
 
 int
@@ -127,17 +119,12 @@ urcrypt_aes_cbcb_de(uint8_t **message_ptr,
                     uint8_t ivec[16],
                     urcrypt_realloc_t realloc_ptr)
 {
-  AES_KEY aes_key;
+  struct aes192_ctx ctx;
 
   urcrypt__reverse(24, key);
-
-  if ( 0 != AES_set_decrypt_key(key, 192, &aes_key) ) {
-    return -1;
-  }
-  else {
-    return urcrypt__cbc_help(message_ptr, length_ptr,
-        &aes_key, ivec, AES_DECRYPT, realloc_ptr);
-  }
+  aes192_set_decrypt_key(&ctx, key);
+  return urcrypt__cbc_help(message_ptr, length_ptr, &ctx,
+      (nettle_cipher_func *)aes192_decrypt, ivec, 0, realloc_ptr);
 }
 
 int
@@ -147,17 +134,12 @@ urcrypt_aes_cbcc_en(uint8_t **message_ptr,
                     uint8_t ivec[16],
                     urcrypt_realloc_t realloc_ptr)
 {
-  AES_KEY aes_key;
+  struct aes256_ctx ctx;
 
   urcrypt__reverse(32, key);
-
-  if ( 0 != AES_set_encrypt_key(key, 256, &aes_key) ) {
-    return -1;
-  }
-  else {
-    return urcrypt__cbc_help(message_ptr, length_ptr,
-        &aes_key, ivec, AES_ENCRYPT, realloc_ptr);
-  }
+  aes256_set_encrypt_key(&ctx, key);
+  return urcrypt__cbc_help(message_ptr, length_ptr, &ctx,
+      (nettle_cipher_func *)aes256_encrypt, ivec, 1, realloc_ptr);
 }
 
 int
@@ -167,15 +149,10 @@ urcrypt_aes_cbcc_de(uint8_t **message_ptr,
                     uint8_t ivec[16],
                     urcrypt_realloc_t realloc_ptr)
 {
-  AES_KEY aes_key;
+  struct aes256_ctx ctx;
 
   urcrypt__reverse(32, key);
-
-  if ( 0 != AES_set_decrypt_key(key, 256, &aes_key) ) {
-    return -1;
-  }
-  else {
-    return urcrypt__cbc_help(message_ptr, length_ptr,
-        &aes_key, ivec, AES_DECRYPT, realloc_ptr);
-  }
+  aes256_set_decrypt_key(&ctx, key);
+  return urcrypt__cbc_help(message_ptr, length_ptr, &ctx,
+      (nettle_cipher_func *)aes256_decrypt, ivec, 0, realloc_ptr);
 }

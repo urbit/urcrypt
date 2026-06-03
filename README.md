@@ -27,43 +27,40 @@ urcrypt:
   * Some property of the routine is cryptographically useful (SHA, RIPE, etc)
   * The routine typically lives in a crypto library, for whatever reason.
 
-A word on OpenSSL
------------------
-Urcrypt depends on OpenSSL's libcrypto, which has global state. In order
-to avoid dealing with this state, urcrypt refuses to build with an internal
-libcrypto. Either build statically (pass `--disable-shared` to `./configure`)
-or provide a shared libcrypto for urcrypt to link against. It is the library
-user's responsibility to initialize openssl, set custom memory functions, etc.
+A word on dependencies
+----------------------
+Urcrypt depends on [GNU Nettle](https://www.lysator.liu.se/~nisse/nettle/)
+(libnettle) for its SHA, RIPEMD, and AES (ECB, CBC, and SIV) primitives.
+Unlike OpenSSL's libcrypto, Nettle keeps no global state, so there is no need
+to initialize the library, register custom memory functions, or arrange for a
+shared object — urcrypt may be built statically or shared without restriction.
+
+AES-SIV (RFC 5297) is provided by a vendored copy of
+[libaes_siv](https://github.com/dfoxfranke/libaes_siv) under `aes_siv/`, with
+its OpenSSL primitives retargeted onto Nettle's `cmac128`, `ctr`, and `aes`.
+It preserves the full RFC 5297 interface (256/384/512-bit keys and a vector of
+associated-data blocks) and passes the upstream RFC 5297 test vectors.
 
 Dependencies
 ------------
 Urcrypt requires the following libraries:
 
-- **OpenSSL (libcrypto)** - For cryptographic primitives
-- **libsecp256k1** - For secp256k1 elliptic curve operations (must have recovery and Schnorr signature support enabled)
-- **libaes_siv** - For AES-SIV authenticated encryption
+- **GNU Nettle (>= 4.0)** - For SHA, RIPEMD, and AES (ECB, CBC) primitives.
+- **libsecp256k1** - For secp256k1 elliptic curve operations. It **must** be
+  built with the recovery and Schnorr signature modules enabled (i.e. provide
+  `secp256k1_recovery.h` and `secp256k1_schnorrsig.h`); `configure` errors out
+  otherwise. Most distribution packages omit these modules, so building from
+  source is usually required (see below).
+
+AES-SIV is supplied by the vendored `aes_siv/` copy and needs no external
+package.
 
 ### macOS Installation
 
-Install the required tools and most dependencies via Homebrew:
+Install the build tools and Nettle via Homebrew:
 
 ```bash
-# Install build tools
-brew install autoconf automake libtool autoconf-archive pkg-config
-
-# Install crypto libraries
-brew install openssl@3 secp256k1
-```
-
-**libaes_siv** is not available via Homebrew and must be built from source:
-
-```bash
-git clone https://github.com/dfoxfranke/libaes_siv.git
-cd libaes_siv
-mkdir build && cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
-make
-sudo make install
+brew install autoconf automake libtool autoconf-archive pkg-config nettle
 ```
 
 ### Linux Installation
@@ -71,10 +68,18 @@ sudo make install
 On Debian/Ubuntu:
 
 ```bash
-sudo apt-get install autoconf automake libtool autoconf-archive pkg-config
-sudo apt-get install libssl-dev libsecp256k1-dev
+sudo apt-get install autoconf automake libtool autoconf-archive pkg-config nettle-dev
+```
 
-# libaes_siv must be built from source (same instructions as macOS)
+### Building libsecp256k1 with the required modules
+
+```bash
+git clone https://github.com/bitcoin-core/secp256k1.git
+cd secp256k1
+./autogen.sh
+./configure --enable-module-recovery --enable-module-schnorrsig --enable-module-ecdh
+make
+sudo make install   # then `sudo ldconfig` on Linux
 ```
 
 Installation

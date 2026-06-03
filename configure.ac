@@ -77,9 +77,9 @@ AS_CASE([$host_os],
     # Add Homebrew paths to PKG_CONFIG_PATH if Homebrew is present
     AS_IF([test -n "$HOMEBREW_PREFIX"], [
       AS_IF([test -n "$PKG_CONFIG_PATH"], [
-        export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/lib/pkgconfig:$HOMEBREW_PREFIX/opt/openssl@3/lib/pkgconfig:$PKG_CONFIG_PATH"
+        export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
       ], [
-        export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/lib/pkgconfig:$HOMEBREW_PREFIX/opt/openssl@3/lib/pkgconfig"
+        export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/lib/pkgconfig"
       ])
       AC_MSG_NOTICE([Added Homebrew paths to PKG_CONFIG_PATH: $PKG_CONFIG_PATH])
     ])
@@ -101,51 +101,8 @@ AC_CHECK_HEADER([secp256k1_recovery.h], [],
 AC_CHECK_HEADER([secp256k1_schnorrsig.h], [],
                 [AC_MSG_ERROR([libsecp256k1 must have Schnorr signatures enabled.])])
 CPPFLAGS=$save_CPPFLAGS
-PKG_CHECK_MODULES([LIBCRYPTO], [libcrypto], [],
-  [AC_MSG_ERROR([
-libcrypto (OpenSSL) is required but was not found via pkg-config.
-
-On macOS with Homebrew:
-  brew install openssl@3
-])])
-
-AS_IF([test "$enable_shared" == "yes"],
-  [# ensure crypto will be shared for shared object (see README.md)
-   save_LIBS=$LIBS
-   save_CFLAGS=$CFLAGS
-   LIBS="$LIBCRYPTO_LIBS $LIBS"
-   CFLAGS="$LIBCRYPTO_CFLAGS $CFLAGS"
-   AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <openssl/sha.h>],
-                                   [[unsigned char sha[32];
-                                     SHA256("hello", 5, sha);]])],
-     [AC_PROG_GREP
-      AC_CHECK_TOOL([NM], [nm])
-      AC_MSG_CHECKING([for shared libcrypto])
-      AS_IF(
-        [$NM conftest$EXEEXT | $GREP 'U .*SHA256' 2>&1 >/dev/null],
-        [AC_MSG_RESULT([yes])],
-        [AC_MSG_ERROR([cannot find shared object for libcrypto.])])],
-     [AC_MSG_ERROR([unable to link libcrypto.])])
-     LIBS=$save_LIBS
-     CFLAGS=$save_CFLAGS])
-
-# Checks for non pkg-config libraries
-AC_CHECK_LIB([aes_siv], [AES_SIV_CTX_new],
-             [AC_SUBST([LIBAES_SIV_LIBS], "-laes_siv")],
-             [AC_MSG_ERROR([
-libaes_siv is required but was not found.
-
-On macOS, you can install it from source:
-  git clone https://github.com/dfoxfranke/libaes_siv.git
-  cd libaes_siv
-  mkdir build && cd build
-  cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
-  make
-  sudo make install
-
-Make sure /usr/local/lib is in your DYLD_LIBRARY_PATH or library search path.
-])],
-             [-lcrypto])
+# nettle >= 4.0 is required for the 2-argument *_digest() interface.
+PKG_CHECK_MODULES([NETTLE], [nettle >= 4.0])
 
 # Checks for header files.
 AC_CHECK_HEADERS([limits.h stddef.h stdint.h stdlib.h string.h])
