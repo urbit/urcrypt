@@ -152,7 +152,11 @@ libmonocypher_la_CPPFLAGS = -I$(srcdir)/monocypher
 libmonocypher_la_SOURCES = monocypher/monocypher.c
 
 # scrypt
+# Vendored libscrypt uses K&R-style function definitions, which are removed in
+# C23. Newer compilers (e.g. recent Apple clang) default to C23 and reject them,
+# so pin a pre-C23 standard.
 libscrypt_la_CPPFLAGS = -D_FORTIFY_SOURCE=2
+libscrypt_la_CFLAGS = -std=gnu17
 libscrypt_la_SOURCES = scrypt/b64.c \
 		       scrypt/crypto-mcf.c \
 		       scrypt/crypto-scrypt-saltgen.c \
