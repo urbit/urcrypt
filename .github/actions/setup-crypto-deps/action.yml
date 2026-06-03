@@ -1,0 +1,83 @@
+name: 'Set up crypto dependencies'
+description: >
+  Build and install GNU Nettle and libsecp256k1 (with the recovery and Schnorr
+  modules that urcrypt's configure requires) from source into a cached prefix,
+  then export the NETTLE_*/LIBSECP256K1_* and runtime library-path variables
+  that ./configure and the test runner need.
+
+inputs:
+  prefix:
+    description: 'Install prefix for the built dependencies.'
+    required: true
+  nettle-version:
+    description: 'GNU Nettle release to build (e.g. 4.0). Released via ftp.gnu.org.'
+    required: true
+  secp256k1-ref:
+    description: 'libsecp256k1 git tag/ref to build (e.g. v0.7.1).'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    # Distro/Homebrew packages are too old (nettle < 4.0) or omit the secp256k1
+    # recovery/Schnorr modules, so both are built from source and cached. The
+    # cache key pins the exact versions, so a bump invalidates it automatically.
+    - name: Restore cached dependencies
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.prefix }}
+        key: cryptodeps-${{ runner.os }}-${{ runner.arch }}-nettle${{ inputs.nettle-version }}-secp${{ inputs.secp256k1-ref }}-v1
+
+    - name: Build GNU Nettle ${{ inputs.nettle-version }}
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        # nettle >= 4.0 introduced the 2-argument *_digest() interface urcrypt uses.
+        cd "$RUNNER_TEMP"
+        curl -fsSLO "https://ftp.gnu.org/gnu/nettle/nettle-${{ inputs.nettle-version }}.tar.gz"
+        tar xzf "nettle-${{ inputs.nettle-version }}.tar.gz"
+        cd "nettle-${{ inputs.nettle-version }}"
+        # --enable-mini-gmp avoids needing libgmp; urcrypt only links libnettle.
+        ./configure --prefix="${{ inputs.prefix }}" --enable-mini-gmp \
+          --disable-static --disable-documentation
+        make -j"$(getconf _NPROCESSORS_ONLN)"
+        make install
+
+    - name: Build libsecp256k1 ${{ inputs.secp256k1-ref }}
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        cd "$RUNNER_TEMP"
+        git clone --depth 1 --branch "${{ inputs.secp256k1-ref }}" \
+          https://github.com/bitcoin-core/secp256k1.git
+        cd secp256k1
+        ./autogen.sh
+        ./configure --prefix="${{ inputs.prefix }}" \
+          --enable-module-recovery --enable-module-schnorrsig --enable-module-ecdh \
+          --disable-static --disable-benchmark --disable-tests --disable-exhaustive-tests
+        make -j"$(getconf _NPROCESSORS_ONLN)"
+        make install
+
+    - name: Export dependency environment
+      shell: bash
+      run: |
+        set -euo pipefail
+        prefix="${{ inputs.prefix }}"
+        # Set the *_CFLAGS/*_LIBS that PKG_CHECK_MODULES honours directly, so the
+        # build is deterministic regardless of any system pkg-config files.
+        {
+          echo "NETTLE_CFLAGS=-I${prefix}/include"
+          echo "NETTLE_LIBS=-L${prefix}/lib -lnettle"
+          echo "LIBSECP256K1_CFLAGS=-I${prefix}/include"
+          echo "LIBSECP256K1_LIBS=-L${prefix}/lib -lsecp256k1"
+          echo "PKG_CONFIG_PATH=${prefix}/lib/pkgconfig"
+        } >> "$GITHUB_ENV"
+        # Runtime loader path so the test runner finds the shared libraries.
+        if [ "$RUNNER_OS" = "macOS" ]; then
+          echo "DYLD_LIBRARY_PATH=${prefix}/lib" >> "$GITHUB_ENV"
+        else
+          echo "LD_LIBRARY_PATH=${prefix}/lib" >> "$GITHUB_ENV"
+        fi
