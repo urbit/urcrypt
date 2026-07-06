@@ -3,7 +3,8 @@ ACLOCAL_AMFLAGS = -I build-aux/m4
 AM_CFLAGS = -Wall -g -O3
 
 lib_LTLIBRARIES = liburcrypt.la
-noinst_LTLIBRARIES = libed25519.la \
+noinst_LTLIBRARIES = libaes_siv.la \
+		     libed25519.la \
 		     libge_additions.la \
 		     libargon2.la \
 		     libblake3.la \
@@ -13,6 +14,7 @@ noinst_LTLIBRARIES = libed25519.la \
 
 include_HEADERS = urcrypt/urcrypt.h
 noinst_HEADERS = urcrypt/util.h \
+		 aes_siv/aes_siv.h \
 		 ed25519/src/ed25519.h \
 		 ed25519/src/ge.h \
 		 ge-additions/ge-additions.h \
@@ -28,7 +30,8 @@ noinst_HEADERS = urcrypt/util.h \
 pkgconfig_DATA = liburcrypt-$(URCRYPT_API_VERSION).pc
 DISTCLEANFILES = $(pkgconfig_DATA)
 
-liburcrypt_la_CPPFLAGS = -I$(srcdir)/ed25519/src \
+liburcrypt_la_CPPFLAGS = -I$(srcdir)/aes_siv \
+			 -I$(srcdir)/ed25519/src \
 			 -I$(srcdir)/ge-additions \
 			 -I$(srcdir)/argon2/include \
 			 -I$(srcdir)/argon2/src/blake2 \
@@ -36,9 +39,9 @@ liburcrypt_la_CPPFLAGS = -I$(srcdir)/ed25519/src \
 			 -I$(srcdir)/monocypher \
 			 -I$(srcdir)/keccak-tiny \
 			 -I$(srcdir)/scrypt
-liburcrypt_la_LIBADD = $(LIBCRYPTO_LIBS) \
+liburcrypt_la_LIBADD = $(NETTLE_LIBS) \
 		       $(LIBSECP256K1_LIBS) \
-		       $(LIBAES_SIV_LIBS) \
+		       libaes_siv.la \
 		       libed25519.la \
 		       libge_additions.la \
 		       libargon2.la \
@@ -46,9 +49,8 @@ liburcrypt_la_LIBADD = $(LIBCRYPTO_LIBS) \
 		       libmonocypher.la \
 		       libkeccak_tiny.la \
 		       libscrypt.la
-liburcrypt_la_CFLAGS = $(LIBCRYPTO_CFLAGS) \
-		       $(LIBSECP256K1_CFLAGS) \
-		       $(LIBAES_SIV_CFLAGS)
+liburcrypt_la_CFLAGS = $(NETTLE_CFLAGS) \
+		       $(LIBSECP256K1_CFLAGS)
 # urcrypt_ is used for public symbols, urcrypt__ for internal.
 liburcrypt_la_LDFLAGS = -export-symbols-regex '^urcrypt_[^_]' \
 												-version-info $(URCRYPT_LT_VERSION)
@@ -67,6 +69,12 @@ liburcrypt_la_SOURCES = urcrypt/aes_cbc.c \
 			urcrypt/sha.c \
 			urcrypt/util.c \
 			urcrypt/util.h
+
+# aes-siv (RFC 5297), retargeted from libaes_siv onto nettle
+libaes_siv_la_CPPFLAGS = -I$(srcdir)/aes_siv
+libaes_siv_la_CFLAGS = $(NETTLE_CFLAGS)
+libaes_siv_la_SOURCES = aes_siv/aes_siv.c \
+			aes_siv/aes_siv.h
 
 # ed25519
 libed25519_la_CFLAGS = -Wno-unused-result
