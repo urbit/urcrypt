@@ -1,5 +1,8 @@
 ACLOCAL_AMFLAGS = -I build-aux/m4
 
+# Use serial test harness to show test output in real-time
+AUTOMAKE_OPTIONS = color-tests serial-tests
+
 AM_CFLAGS = -Wall -g -O3
 
 lib_LTLIBRARIES = liburcrypt.la
@@ -149,7 +152,11 @@ libmonocypher_la_CPPFLAGS = -I$(srcdir)/monocypher
 libmonocypher_la_SOURCES = monocypher/monocypher.c
 
 # scrypt
+# Vendored libscrypt uses K&R-style function definitions, which are removed in
+# C23. Newer compilers (e.g. recent Apple clang) default to C23 and reject them,
+# so pin a pre-C23 standard.
 libscrypt_la_CPPFLAGS = -D_FORTIFY_SOURCE=2
+libscrypt_la_CFLAGS = -std=gnu17
 libscrypt_la_SOURCES = scrypt/b64.c \
 		       scrypt/crypto-mcf.c \
 		       scrypt/crypto-scrypt-saltgen.c \
@@ -170,3 +177,38 @@ libkeccak_tiny_la_CFLAGS = -std=c11 -Wextra -Wpedantic -Wall
 libkeccak_tiny_la_SOURCES = keccak-tiny/keccak-tiny.c \
 		       keccak-tiny/define-macros.h \
 		       keccak-tiny/keccak-tiny.h
+
+# test suite
+TESTS = test_runner
+check_PROGRAMS = test_runner
+
+test_runner_SOURCES = tests/test_runner.c \
+		      tests/test_aes.c \
+		      tests/test_argon2.c \
+		      tests/test_blake3.c \
+		      tests/test_ed25519.c \
+		      tests/test_ge_additions.c \
+		      tests/test_keccak.c \
+		      tests/test_monocypher.c \
+		      tests/test_ripemd.c \
+		      tests/test_scrypt.c \
+		      tests/test_secp256k1.c \
+		      tests/test_sha.c
+
+test_runner_CPPFLAGS = -I$(srcdir) \
+		       -I$(srcdir)/ed25519/src \
+		       -I$(srcdir)/ge-additions \
+		       -I$(srcdir)/argon2/include \
+		       -I$(srcdir)/blake3 \
+		       -I$(srcdir)/monocypher \
+		       -I$(srcdir)/keccak-tiny \
+		       -I$(srcdir)/scrypt \
+		       -I$(srcdir)/urcrypt
+
+test_runner_CFLAGS = $(NETTLE_CFLAGS) \
+		     $(LIBSECP256K1_CFLAGS)
+
+test_runner_LDADD = liburcrypt.la \
+		    urcrypt/liburcrypt_la-util.o \
+		    $(NETTLE_LIBS) \
+		    $(LIBSECP256K1_LIBS)

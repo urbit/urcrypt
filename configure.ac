@@ -57,8 +57,43 @@ PKG_INSTALLDIR
 # Checks for programs
 AC_PROG_CC
 
+# macOS/Homebrew support: Add common Homebrew paths to PKG_CONFIG_PATH
+# This helps find libraries installed via Homebrew on both Intel and Apple Silicon Macs
+AS_CASE([$host_os],
+  [darwin*], [
+    # Check for Homebrew installation
+    AC_MSG_CHECKING([for Homebrew])
+    AS_IF([test -d /opt/homebrew], [
+      HOMEBREW_PREFIX="/opt/homebrew"
+      AC_MSG_RESULT([found at $HOMEBREW_PREFIX (Apple Silicon)])
+    ], [test -d /usr/local/Cellar], [
+      HOMEBREW_PREFIX="/usr/local"
+      AC_MSG_RESULT([found at $HOMEBREW_PREFIX (Intel)])
+    ], [
+      HOMEBREW_PREFIX=""
+      AC_MSG_RESULT([not found])
+    ])
+    
+    # Add Homebrew paths to PKG_CONFIG_PATH if Homebrew is present
+    AS_IF([test -n "$HOMEBREW_PREFIX"], [
+      AS_IF([test -n "$PKG_CONFIG_PATH"], [
+        export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH"
+      ], [
+        export PKG_CONFIG_PATH="$HOMEBREW_PREFIX/lib/pkgconfig"
+      ])
+      AC_MSG_NOTICE([Added Homebrew paths to PKG_CONFIG_PATH: $PKG_CONFIG_PATH])
+    ])
+  ]
+)
+
 # Checks for pkg-config capable libraries
-PKG_CHECK_MODULES([LIBSECP256K1], [libsecp256k1])
+PKG_CHECK_MODULES([LIBSECP256K1], [libsecp256k1], [],
+  [AC_MSG_ERROR([
+libsecp256k1 is required but was not found via pkg-config.
+
+On macOS with Homebrew:
+  brew install secp256k1
+])])
 save_CPPFLAGS=$CPPFLAGS
 CPPFLAGS="$CPPFLAGS $LIBSECP256K1_CFLAGS"
 AC_CHECK_HEADER([secp256k1_recovery.h], [],
